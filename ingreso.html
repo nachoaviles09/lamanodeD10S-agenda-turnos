@@ -464,7 +464,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <img src="logo.png" alt="La Mano de Dios" onerror="this.style.display='none'">
+        <img src="logo.jpg" alt="La Mano de Dios" onerror="this.style.display='none'">
         <div>
           <h1 id="complexName">LA MANO DE DIOS</h1>
           <span>Control de Acceso en Recepción</span>
@@ -642,6 +642,64 @@
 
     // Agrupa por código para que un Cumpleaños (3 horas seguidas) se muestre como un único evento
     function renderTurnosAgrupados(turnosRaw) {
+      // Filtrar para excluir por completo los turnos con estado 'Cancelado'
+      const turnosActivos = turnosRaw.filter(t => t.estado !== 'Cancelado');
+      const agrupados = {};
+
+      turnosActivos.forEach(t => {
+        if (!agrupados[t.code]) {
+          agrupados[t.code] = {
+            ...t,
+            horarios: [t.horario]
+          };
+        } else {
+          agrupados[t.code].horarios.push(t.horario);
+        }
+      });
+
+      const lista = Object.values(agrupados);
+
+      let confirmados = 0;
+      let pendientes = 0;
+
+      lista.forEach(item => {
+        if (item.estado === 'Confirmado') confirmados++;
+        else pendientes++;
+      });
+
+      document.getElementById('countConfirmados').textContent = confirmados;
+      document.getElementById('countPendientes').textContent = pendientes;
+
+      const container = document.getElementById('turnosList');
+      if (lista.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No hay turnos activos registrados para hoy.</div>';
+        return;
+      }
+
+      lista.sort((a, b) => a.horarios[0].localeCompare(b.horarios[0]));
+
+      container.innerHTML = lista.map(item => {
+        let rangoHora = item.horarios[0];
+        if (item.horarios.length > 1) {
+          const inicio = item.horarios[0].split(' a ')[0];
+          const fin = item.horarios[item.horarios.length - 1].split(' a ')[1];
+          rangoHora = `${inicio} a ${fin} (${item.horarios.length} hs)`;
+        }
+
+        return `
+          <div class="turno-item estado-${item.estado}">
+            <div class="turno-main">
+              <span class="turno-code">${item.code} · ⏰ ${rangoHora}</span>
+              <span class="turno-title">${item.responsable} — ${item.cancha}</span>
+              <span class="turno-meta">${item.disciplina} · Tel: ${item.telefono}</span>
+            </div>
+            <div class="turno-actions">
+              <span class="badge-estado badge-${item.estado}">${item.estado}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
       const agrupados = {};
 
       turnosRaw.forEach(t => {
@@ -706,7 +764,6 @@
           </div>
         `;
       }).join('');
-    }
   </script>
 </body>
 </html>

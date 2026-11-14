@@ -5,24 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Mano de Dios - Reservas Online</title>
   
-  <!-- Google Fonts para tipografía deportiva y moderna -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=30">
-  
-  <!-- Estilos en línea rápidos para adaptar el color acento de "La Mano de Dios" (Azul y Celeste) -->
-  <style>
-    :root {
-      --primary: #0a1424; /* Azul marino profundo */
-      --primary-light: #15263f;
-      --accent: #3b82f6; /* Azul / Celeste vivo */
-      --accent-hover: #60a5fa;
-      --accent-glow: rgba(59, 130, 246, 0.3);
-      --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css?v=28">
 </head>
 <body>
 
@@ -30,7 +17,7 @@
   <header class="main-header">
     <div class="nav-container">
       <div class="brand-logo">
-        <img src="logo.jpg" alt="La Mano de Dios" class="logo-img" onerror="this.src='https://i.imgur.com/8Qp4R5m.png'">
+        <img src="logo.png" alt="La Mano de Dios" class="logo-img" onerror="this.style.display='none'">
         <div class="brand-text">
           <h1>LA MANO DE DIOS</h1>
           <span>Complejo de Fútbol 5 y 7</span>
@@ -43,16 +30,16 @@
       
       <nav class="nav-menu">
         <a href="#reservas" class="nav-link active">Reservar</a>
-        <a href="#deportes">Canchas y Eventos</a>
-        <a href="#instalaciones">Instalaciones</a>
-        <a href="#ubicacion">Ubicación</a>
+        <a href="#deportes" class="nav-link">Canchas y Eventos</a>
+        <a href="#instalaciones" class="nav-link">Instalaciones</a>
+        <a href="#ubicacion" class="nav-link">Ubicación</a>
+        <a href="cancelar.html" class="nav-link">Cancelar Turno</a>
       </nav>
     </div>
   </header>
 
   <!-- HÉROE / PORTADA PRINCIPAL -->
   <section class="hero-section">
-    <div class="hero-bg"></div>
     <div class="hero-content reveal">
       <span class="tag">RESERVAS ONLINE</span>
       <h2>¡ASEGURÁ TU HORA EN EL TEMPLO DEL FÚTBOL!</h2>
@@ -76,7 +63,7 @@
       </div>
 
       <div class="grid-reservation">
-        <!-- FORMULARIO DE RESERVA -->
+        <!-- FORMULARIO DE RESERVA CENTRADO -->
         <div class="form-container glass-effect reveal delay-1">
           <form id="reservationForm">
             <div class="form-group">
@@ -125,40 +112,10 @@
 
           <!-- CARTEL DE ÉXITO O ERROR -->
           <div id="statusBox" class="status-box" style="display: none;"></div>
-        </div>
 
-        <!-- INFO / AYUDA RÁPIDA -->
-        <div class="info-sidebar reveal delay-2">
-          <div class="info-card glass-effect">
-            <h4>💡 ¿Cómo funciona?</h4>
-            <ul class="steps-list">
-              <li>
-                <span class="step-num">1</span>
-                <div>
-                  <strong>Completá el formulario</strong>
-                  <p>Elegí qué querés jugar, cuándo y a qué hora.</p>
-                </div>
-              </li>
-              <li>
-                <span class="step-num">2</span>
-                <div>
-                  <strong>Mandá el WhatsApp</strong>
-                  <p>Al confirmar, se abrirá tu WhatsApp con el mensaje automático de reserva listo para enviar.</p>
-                </div>
-              </li>
-              <li>
-                <span class="step-num">3</span>
-                <div>
-                  <strong>Recibí tu confirmación</strong>
-                  <p>El complejo agendará tu turno y te responderá para asegurar el lugar.</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div class="info-card glass-effect alert-card">
-            <h4>⚠️ Importante</h4>
-            <p>Tenés un máximo de <strong>15 minutos</strong> para enviar el comprobante de reserva por WhatsApp una vez generado, de lo contrario, el horario volverá a quedar disponible para otros jugadores.</p>
+          <!-- ENLACE DIRECTO PARA CANCELAR TURNO -->
+          <div class="cancel-link-box">
+            ¿Ya tenés un turno y no podés asistir? <a href="cancelar.html">Cancelá tu reserva desde acá →</a>
           </div>
         </div>
       </div>
@@ -189,7 +146,7 @@
         <div class="sport-card glass-effect">
           <span class="sport-badge">EXCLUSIVA F7</span>
           <h4>FÚTBOL 7</h4>
-          <p>Cancha de Fútbol 7 de amplias dimensiones. Perfecta para un juego más táctico y equipos con planteles más numerosos.</p>
+          <p>Cancha reglamentaria para equipos de 7 jugadores con amplio espacio de juego.</p>
           <ul class="sport-features">
             <li>✓ 1 cancha de F7 dedicada</li>
             <li>✓ Césped de primer nivel</li>
@@ -264,45 +221,6 @@
       </div>
     </section>
 
-    <!-- SECCIÓN: GALERÍA DE VIDEOS -->
-    <section class="section media-section scroll-margin" id="galeria">
-      <div class="section-title reveal">
-        <span class="tag">EL PREDIO EN ACCIÓN</span>
-        <h3>CONOCÉ NUESTRAS CANCHAS</h3>
-        <p>Mirá cómo se viven los partidos y los festejos en La Mano de Dios.</p>
-      </div>
-
-      <div class="videos-grid reveal delay-1">
-        <!-- Video 1 -->
-        <div class="video-card glass-effect">
-          <div class="video-wrapper">
-            <video controls playsinline preload="metadata" poster="logo.png">
-              <source src="Vení a la Mano de 𝗗𝟭𝟬𝗦 ⚽_Fútbol, buena onda, música y las mejores promos, encontralas en nue.mp4" type="video/mp4">
-              Tu navegador no soporta la reproducción de video.
-            </video>
-          </div>
-          <div class="video-info">
-            <span class="sport-badge">CANCHAS FÚTBOL 5</span>
-            <h4>Nuestras 4 Canchas F5</h4>
-            <p>Césped sintético e iluminación LED para jugar de día y de noche.</p>
-          </div>
-        </div>
-
-        <!-- Video 2 -->
-        <div class="video-card glass-effect">
-          <div class="video-wrapper">
-            <video controls playsinline preload="metadata" poster="logo.png">
-              <source src="videos/cancha-f7.mp4" type="video/mp4">
-              Tu navegador no soporta la reproducción de video.
-            </video>
-          </div>
-          <div class="video-info">
-            <span class="sport-badge">NUESTRO PREDIO</span>
-            <h4>Conoce todo lo que ofrecemos</h4>
-            <p>Espacio amplio para disfrutar de los partidos y el tercer tiempo.</p>
-          </div>
-        </div>
-
     <!-- SECCIÓN: UBICACIÓN Y MAPA INTERACTIVO -->
     <section class="section location-section glass-effect reveal delay-1" id="ubicacion" style="margin-bottom: 0;">
       <div class="section-title">
@@ -311,7 +229,6 @@
         <p>📍 Fraternidad y Gobernador Crespo, Paraná, Entre Ríos.</p>
       </div>
       <div class="map-container">
-        <!-- Mapa centrado exactamente en la intersección de Fraternidad y Gob. Crespo, Paraná -->
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3392.5186835165846!2d-60.5054743!3d-31.7513364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b4528189856a49%3A0xda59c6fb25c34594!2sFraternidad%20%26%20Gdor.%20Crespo%2C%20Paran%C3%A1%2C%20Entre%20R%C3%ADos!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </section>
@@ -326,14 +243,14 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-content">
-      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong> — Sistema de Reservas Online.</p>
+      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong> — Sistema de Reservas Online · <a href="cancelar.html" style="color: var(--accent); text-decoration: none;">Cancelar un turno</a></p>
       <p class="dev-credits">
         Desarrollo por <a href="https://github.com" target="_blank" rel="noopener noreferrer">Ignacio Aviles Peltzer</a>
       </p>
     </div>
   </footer>
 
-  <script src="config.js?v=5"></script>
-  <script src="app.js?v=25"></script>
+  <script src="config.js?v=4"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>
