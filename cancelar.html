@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancelar Turno — La Mano de Dios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #060b14;
+      --surface: #0d192e;
+      --accent: #38bdf8;
+      --gradient-brand: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.14);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.14);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.14);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(29, 78, 216, 0.2), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.12), transparent 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 32px 26px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .logo {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.5px solid var(--accent);
+      object-fit: cover;
+      margin: 0 auto 14px;
+      display: block;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .input-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .code-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-dark);
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 0 14px;
+    }
+
+    .code-prefix {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1.1rem;
+      margin-right: 6px;
+      user-select: none;
+    }
+
+    .code-box input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 14px 4px;
+      outline: none;
+      text-transform: uppercase;
+    }
+
+    .btn-cancel-slot {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.96rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .btn-cancel-slot:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    .btn-cancel-slot:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .status-msg.ok {
+      display: block;
+      background: var(--green-bg);
+      border: 1px solid var(--green);
+      color: #dcfce7;
+    }
+
+    .status-msg.warning {
+      display: block;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber);
+      color: #fef3c7;
+    }
+
+    .status-msg.error {
+      display: block;
+      background: var(--red-bg);
+      border: 1px solid var(--red);
+      color: #fee2e2;
+    }
+
+    .status-msg strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .footer-links {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .footer-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <img src="logo.png" alt="La Mano de Dios" class="logo" onerror="this.style.display='none'">
+    <span class="tag" id="complexTag">LA MANO DE DIOS</span>
+    <h1>Cancelar mi Reserva</h1>
+    <p class="subtitle">Ingresá el código de 4 dígitos que recibiste en tu comprobante para liberar la cancha al instante.</p>
+
+    <form id="cancelForm">
+      <div class="input-group">
+        <label for="cancelCode">Código de Reserva</label>
+        <div class="code-box">
+          <span class="code-prefix" id="prefixLabel">#LMD-</span>
+          <input type="text" id="cancelCode" placeholder="Ej: 4821" required autocomplete="off">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-cancel-slot" id="btnCancel">
+        Liberar Turno Ahora
+      </button>
+    </form>
+
+    <div id="cancelResult" class="status-msg"></div>
+
+    <div class="footer-links">
+      <a href="index.html">← Reservar otro turno</a>
+      <a href="#" id="waHelpLink" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+    </div>
+  </div>
+
+  <script src="config.js?v=2"></script>
+  <script>
+    const APP_CONFIG = window.APP_CONFIG || CONFIG;
+    const SCRIPT_URL = APP_CONFIG.scriptURL;
+    const PREFIJO = APP_CONFIG.prefijoCodigo || 'LMD';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('complexTag').textContent = APP_CONFIG.nombreComplejo.toUpperCase();
+      document.getElementById('prefixLabel').textContent = `#${PREFIJO}-`;
+
+      const waLink = document.getElementById('waHelpLink');
+      const msg = `¡Hola! Necesito ayuda con una reserva en ${APP_CONFIG.nombreComplejo}.`;
+      waLink.href = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(msg)}`;
+
+      // Permite pasar ?code=4821 en la URL si querés mandar links directos
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('code')) {
+        document.getElementById('cancelCode').value = params.get('code');
+      }
+
+      document.getElementById('cancelForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const codeInput = document.getElementById('cancelCode');
+        const btn = document.getElementById('btnCancel');
+        const resultBox = document.getElementById('cancelResult');
+
+        const rawCode = codeInput.value.trim();
+        if (!rawCode) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Procesando baja...';
+
+        try {
+          const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+              action: 'cancelar',
+              code: rawCode
+            })
+          });
+          const data = await res.json();
+
+          resultBox.className = `status-msg ${data.status || 'error'}`;
+          resultBox.innerHTML = `
+            <strong>${data.message}</strong>
+            ${data.details ? `<span>${data.details}</span>` : ''}
+          `;
+
+          if (data.status === 'ok') {
+            codeInput.value = '';
+          }
+        } catch (err) {
+          resultBox.className = 'status-msg error';
+          resultBox.innerHTML = '<strong>Error de conexión</strong><span>No pudimos procesar la baja. Contactanos por WhatsApp para avisarnos.</span>';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Liberar Turno Ahora';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
