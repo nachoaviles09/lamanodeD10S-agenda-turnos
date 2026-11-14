@@ -307,13 +307,13 @@ async function handleReservationSubmit(e) {
   btnText.textContent = 'Generar Solicitud de Reserva 🚀';
   if (loader) loader.style.display = 'none';
 
-  const statusTitle = savedInSheet
-    ? '¡Turno pre-reservado en agenda!'
+ const statusTitle = savedInSheet
+    ? '¡Turno reservado en agenda!'
     : '⚠️ Sin conexión con la agenda automática';
 
   const statusNote = savedInSheet
-    ? 'Tu horario quedó bloqueado por 15 minutos. Tocá el botón verde de abajo para enviarnos el comprobante por WhatsApp y confirmarlo.'
-    : 'No pudimos conectar con la agenda automática, pero podés enviarnos tu pedido directo por WhatsApp tocando el botón de abajo.';
+    ? 'Tu turno ya quedó agendado. Podés compartir los datos del partido con tu grupo desde el botón de abajo:'
+    : 'No pudimos conectar con la agenda automática, pero podés compartir los datos del partido con tu grupo:';
 
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
@@ -321,10 +321,7 @@ async function handleReservationSubmit(e) {
     <span class="confirm-badge">CÓDIGO #${refCode}</span>
     <h4>${statusTitle}</h4>
     <p>${statusNote}</p>
-    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm" style="margin-bottom: 10px;">
-      📲 Enviar solicitud por WhatsApp al complejo
-    </a>
-    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8;">
+    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
       👥 Compartir partido con el grupo
     </a>
     <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.85rem; text-decoration: underline; cursor: pointer;">

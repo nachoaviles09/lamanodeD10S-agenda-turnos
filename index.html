@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>La Mano de Dios - Reservas Online</title>
+  <title>La Mano de Dios — Complejo de Fútbol 5 y 7</title>
   
+  <link rel="icon" type="image/png" href="logo.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
 
-  <!-- ENCABEZADO Y NAVEGACIÓN -->
+  <!-- ENCABEZADO -->
   <header class="main-header">
     <div class="nav-container">
       <div class="brand-logo">
         <img src="logo.png" alt="La Mano de Dios" class="logo-img" onerror="this.style.display='none'">
         <div class="brand-text">
-          <h1>LA MANO DE DIOS</h1>
+          <h1>La Mano de Dios</h1>
           <span>Complejo de Fútbol 5 y 7</span>
         </div>
       </div>
@@ -30,23 +31,22 @@
       
       <nav class="nav-menu">
         <a href="#reservas" class="nav-link active">Reservar</a>
+        <a href="#galeria" class="nav-link">El Predio</a>
         <a href="#deportes" class="nav-link">Canchas y Eventos</a>
-        <a href="#instalaciones" class="nav-link">Instalaciones</a>
         <a href="#ubicacion" class="nav-link">Ubicación</a>
-        <a href="cancelar.html" class="nav-link">Cancelar Turno</a>
       </nav>
     </div>
   </header>
 
-  <!-- HÉROE / PORTADA PRINCIPAL -->
+  <!-- PORTADA SERENA Y DIRECTA -->
   <section class="hero-section">
     <div class="hero-content reveal">
-      <span class="tag">RESERVAS ONLINE</span>
-      <h2>¡ASEGURÁ TU HORA EN EL TEMPLO DEL FÚTBOL!</h2>
-      <p class="hero-desc">4 canchas de Fútbol 5 y 1 de Fútbol 7 para dejar todo en la cancha. También festejamos cumpleaños con el pack más completo. ¡Elegí tu horario y reservá al instante!</p>
+      <span class="tag">Paraná · Fraternidad y Gob. Crespo</span>
+      <h2>Tu cancha lista, sin vueltas.</h2>
+      <p class="hero-desc">4 canchas de Fútbol 5, 1 cancha de Fútbol 7 y espacio equipado para cumpleaños y tercer tiempo. Elegí día y horario en segundos.</p>
       <div class="hero-actions">
-        <a href="#reservas" class="btn btn-primary">Reservar Mi Turno ⚡</a>
-        <a href="#instalaciones" class="btn btn-secondary">Ver Instalaciones 🍻</a>
+        <a href="#reservas" class="btn btn-primary">Reservar turno</a>
+        <a href="#galeria" class="btn btn-secondary">Conocer el complejo</a>
       </div>
     </div>
   </section>
@@ -54,179 +54,161 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="container">
 
-    <!-- SECCIÓN: SISTEMA DE RESERVAS -->
+    <!-- SECCIÓN 1: RESERVAS -->
     <section class="section reservation-section scroll-margin" id="reservas">
       <div class="section-title reveal">
-        <span class="tag" id="config-subtitulo">PASO A PASO</span>
-        <h3 id="config-titulo">SOLICITAR TU TURNO</h3>
-        <p>Seleccioná el día, la disciplina, la cancha y tu horario preferido.</p>
+        <span class="tag" id="config-subtitulo">Turnos Online</span>
+        <h3 id="config-titulo">Reservar un turno</h3>
+        <p>Seleccioná fecha, actividad y horario disponible en tiempo real.</p>
       </div>
 
       <div class="grid-reservation">
-        <!-- FORMULARIO DE RESERVA CENTRADO -->
         <div class="form-container glass-effect reveal delay-1">
           <form id="reservationForm">
-            <div class="form-group">
-              <label for="fecha">📆 Seleccionar Fecha</label>
-              <input type="date" id="fecha" name="fecha" required>
-            </div>
-
-            <div class="form-group">
-              <label for="deporte">⚽ Disciplina o Evento</label>
-              <select id="deporte" name="deporte" required>
-                <option value="">Cargando opciones...</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="cancha">🏟️ Elegir Cancha</label>
-              <select id="cancha" name="cancha" required disabled>
-                <option value="">Primero elegí una disciplina...</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="horario">⏰ Horarios Disponibles</label>
-              <select id="horario" name="horario" required disabled>
-                <option value="">Primero seleccioná fecha y cancha...</option>
-              </select>
-              <span class="input-note" id="horarioNote">Los horarios ocupados se bloquean automáticamente en tiempo real.</span>
+            <div class="form-group-row">
+              <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" required>
+              </div>
+              <div class="form-group">
+                <label for="deporte">Actividad</label>
+                <select id="deporte" name="deporte" required>
+                  <option value="">Cargando...</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group-row">
               <div class="form-group">
-                <label for="nombre">👤 Nombre Completo</label>
+                <label for="cancha">Cancha</label>
+                <select id="cancha" name="cancha" required disabled>
+                  <option value="">Elegí primero actividad...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="horario">Horario</label>
+                <select id="horario" name="horario" required disabled>
+                  <option value="">Elegí fecha y cancha...</option>
+                </select>
+              </div>
+            </div>
+            <span class="input-note" id="horarioNote">Los horarios ocupados se bloquean automáticamente.</span>
+
+            <div class="form-group-row" style="margin-top: 16px;">
+              <div class="form-group">
+                <label for="nombre">Nombre y apellido</label>
                 <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
               </div>
               <div class="form-group">
-                <label for="telefono">📞 WhatsApp de Contacto</label>
+                <label for="telefono">Teléfono / WhatsApp</label>
                 <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3431234567" required>
               </div>
             </div>
 
             <button type="submit" class="btn btn-submit" id="btnSubmit">
-              <span class="btn-text">Generar Solicitud de Reserva 🚀</span>
+              <span class="btn-text">Confirmar reserva</span>
               <div class="loader" id="submitLoader"></div>
             </button>
           </form>
 
-          <!-- CARTEL DE ÉXITO O ERROR -->
           <div id="statusBox" class="status-box" style="display: none;"></div>
 
-          <!-- ENLACE DIRECTO PARA CANCELAR TURNO -->
           <div class="cancel-link-box">
-            ¿Ya tenés un turno y no podés asistir? <a href="cancelar.html">Cancelá tu reserva desde acá →</a>
+            ¿Necesitás dar de baja un turno? <a href="cancelar.html">Cancelar reserva</a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SECCIÓN: NUESTRAS CANCHAS Y EVENTOS -->
+    <!-- SECCIÓN 2: PRESENTACIÓN EN VIDEO (2 COLUMNAS VERTICALES) -->
+    <section class="section media-section scroll-margin" id="galeria">
+      <div class="section-title reveal">
+        <span class="tag">El Complejo</span>
+        <h3>Conocé nuestras instalaciones</h3>
+        <p>Canchas de césped sintético, iluminación LED y espacios pensados para disfrutar antes y después del partido.</p>
+      </div>
+
+      <div class="videos-showcase reveal delay-1">
+        <!-- Video 1: Vista aérea y ambiente de día -->
+        <div class="video-card glass-effect">
+          <div class="video-wrapper">
+            <video controls playsinline preload="metadata">
+              <source src="videos/video_1.mp4" type="video/mp4">
+              Tu navegador no soporta la reproducción de video.
+            </video>
+          </div>
+          <div class="video-info">
+            <span class="sport-badge">Vista del predio</span>
+            <h4>Canchas y espacios al aire libre</h4>
+            <p>4 canchas de F5, 1 de F7, sectores de descanso y estacionamiento propio.</p>
+          </div>
+        </div>
+
+        <!-- Video 2: Partidos nocturnos e iluminación LED -->
+        <div class="video-card glass-effect">
+          <div class="video-wrapper">
+            <video controls playsinline preload="metadata">
+              <source src="videos/video_2.mp4" type="video/mp4">
+              Tu navegador no soporta la reproducción de video.
+            </video>
+          </div>
+          <div class="video-info">
+            <span class="sport-badge">Turno noche</span>
+            <h4>Iluminación LED y tercer tiempo</h4>
+            <p>Partidos nocturnos, torneos y sector cubierto con bar y parrillas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: CANCHAS, EVENTOS Y COMODIDADES (COMPACTO) -->
     <section class="section scroll-margin" id="deportes">
       <div class="section-title reveal">
-        <span class="tag">ACTIVIDADES</span>
-        <h3>QUÉ PODÉS JUGAR Y FESTEJAR</h3>
-        <p>Instalaciones y packs pensados para que disfrutes al máximo en el complejo.</p>
+        <span class="tag">Servicios</span>
+        <h3>Canchas y eventos</h3>
+        <p>Opciones para partidos semanales, torneos o festejos privados.</p>
       </div>
 
       <div class="sports-grid reveal delay-1">
-        <!-- Tarjeta 1: Fútbol 5 -->
         <div class="sport-card glass-effect">
-          <span class="sport-badge">4 CANCHAS F5</span>
-          <h4>FÚTBOL 5</h4>
-          <p>Césped sintético de alta calidad y excelente amortiguación. Ideal para partidos rápidos de 5 vs 5 con amigos o torneos intensos.</p>
-          <ul class="sport-features">
-            <li>✓ 4 canchas disponibles</li>
-            <li>✓ Iluminación LED de última generación</li>
-            <li>✓ Turnos de 1 hora</li>
-          </ul>
+          <span class="sport-badge">4 canchas</span>
+          <h4>Fútbol 5</h4>
+          <p>Césped sintético con iluminación LED para partidos de 1 hora.</p>
         </div>
 
-        <!-- Tarjeta 2: Fútbol 7 -->
         <div class="sport-card glass-effect">
-          <span class="sport-badge">EXCLUSIVA F7</span>
-          <h4>FÚTBOL 7</h4>
-          <p>Cancha reglamentaria para equipos de 7 jugadores con amplio espacio de juego.</p>
-          <ul class="sport-features">
-            <li>✓ 1 cancha de F7 dedicada</li>
-            <li>✓ Césped de primer nivel</li>
-            <li>✓ Turnos de 1 hora</li>
-          </ul>
+          <span class="sport-badge">1 cancha</span>
+          <h4>Fútbol 7</h4>
+          <p>Cancha amplia reglamentaria para equipos de 7 jugadores por lado.</p>
         </div>
 
-        <!-- Tarjeta 3: Cumpleaños y Eventos -->
         <div class="sport-card glass-effect highlight-card">
-          <span class="sport-badge">PACK 3 HORAS</span>
-          <h4>CUMPLEAÑOS Y EVENTOS</h4>
-          <p>Festejá tu cumpleaños o evento reservando una cancha de Fútbol 5 y disfrutando de todo el equipamiento del complejo.</p>
-          <ul class="sport-features">
-            <li>✓ 3 horas de uso de 1 cancha de F5</li>
-            <li>✓ Acceso a freezer y heladeras</li>
-            <li>✓ Parrillas, mesas, sillas y tablones incluidos</li>
-          </ul>
+          <span class="sport-badge">Pack 3 horas</span>
+          <h4>Cumpleaños y eventos</h4>
+          <p>Incluye 1 cancha de F5 por 3 horas, parrillas, freezer, heladeras, mesas, sillas y tablones.</p>
+        </div>
+      </div>
+
+      <!-- Comodidades en formato limpio tipo etiquetas -->
+      <div class="amenities-bar glass-effect reveal delay-2">
+        <span class="amenities-label">Comodidades del predio:</span>
+        <div class="amenities-pills">
+          <span class="amenity-pill">Estacionamiento propio</span>
+          <span class="amenity-pill">Bar tercer tiempo</span>
+          <span class="amenity-pill">Parrillas</span>
+          <span class="amenity-pill">2 baños completos</span>
+          <span class="amenity-pill">Freezer y heladeras</span>
+          <span class="amenity-pill">Mesas, sillas y tablones</span>
         </div>
       </div>
     </section>
 
-    <!-- SECCIÓN: COMODIDADES -->
-    <section class="section amenities-section glass-effect scroll-margin" id="instalaciones">
-      <div class="section-title reveal">
-        <span class="tag">NUESTRO PREDIO</span>
-        <h3>COMODIDADES E INSTALACIONES</h3>
-        <p>Mucho más que un partido. Todo lo que necesitás para antes y después del juego.</p>
-      </div>
-      <div class="amenities-grid reveal delay-1">
-        <div class="amenity-item">
-          <span class="amenity-icon">🚗</span>
-          <div>
-            <strong>Estacionamiento</strong>
-            <p>Espacio propio y cómodo para dejar tu vehículo seguro.</p>
-          </div>
-        </div>
-        <div class="amenity-item">
-          <span class="amenity-icon">🍻</span>
-          <div>
-            <strong>Bar para el Tercer Tiempo</strong>
-            <p>Bebidas frías y espacio para charlar y festejar después del partido.</p>
-          </div>
-        </div>
-        <div class="amenity-item">
-          <span class="amenity-icon">🔥</span>
-          <div>
-            <strong>Parrillas</strong>
-            <p>Asadores disponibles para disfrutar de un asado post-partido.</p>
-          </div>
-        </div>
-        <div class="amenity-item">
-          <span class="amenity-icon">🚻</span>
-          <div>
-            <strong>Dos Baños Completos</strong>
-            <p>Vestuarios y baños cómodos y limpios para los jugadores.</p>
-          </div>
-        </div>
-        <div class="amenity-item">
-          <span class="amenity-icon">❄️</span>
-          <div>
-            <strong>Freezer y Heladeras</strong>
-            <p>Equipamiento ideal para mantener frías las bebidas en cumpleaños o eventos.</p>
-          </div>
-        </div>
-        <div class="amenity-item">
-          <span class="amenity-icon">🪑</span>
-          <div>
-            <strong>Mesas, Sillas y Tablones</strong>
-            <p>Todo el mobiliario necesario para organizar comidas y festejos familiares.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECCIÓN: UBICACIÓN Y MAPA INTERACTIVO -->
+    <!-- SECCIÓN 4: UBICACIÓN -->
     <section class="section location-section glass-effect reveal delay-1" id="ubicacion" style="margin-bottom: 0;">
-      <div class="section-title">
-        <span class="tag">CÓMO LLEGAR</span>
-        <h3>NUESTRA UBICACIÓN</h3>
-        <p>📍 Fraternidad y Gobernador Crespo, Paraná, Entre Ríos.</p>
+      <div class="section-title" style="margin-bottom: 24px;">
+        <span class="tag">Ubicación</span>
+        <h3>Cómo llegar</h3>
+        <p>Fraternidad y Gobernador Crespo, Paraná, Entre Ríos.</p>
       </div>
       <div class="map-container">
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3392.5186835165846!2d-60.5054743!3d-31.7513364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b4528189856a49%3A0xda59c6fb25c34594!2sFraternidad%20%26%20Gdor.%20Crespo%2C%20Paran%C3%A1%2C%20Entre%20R%C3%ADos!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -237,13 +219,13 @@
 
   <!-- Botón Flotante de WhatsApp -->
   <a href="#" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Contactar por WhatsApp">
-    <svg viewBox="0 0 24 24" style="width:34px; height:34px; fill:#fff;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+    <svg viewBox="0 0 24 24" style="width:28px; height:28px; fill:#fff;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
   </a>
 
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-content">
-      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong> — Sistema de Reservas Online · <a href="cancelar.html" style="color: var(--accent); text-decoration: none;">Cancelar un turno</a></p>
+      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong> · <a href="cancelar.html">Cancelar un turno</a></p>
       <p class="dev-credits">
         Desarrollo por <a href="https://github.com" target="_blank" rel="noopener noreferrer">Ignacio Aviles Peltzer</a>
       </p>
