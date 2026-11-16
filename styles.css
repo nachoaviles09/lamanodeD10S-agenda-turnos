@@ -230,6 +230,45 @@ body {
   font-size: 0.95rem;
 }
 
+/* INDICADOR EN VIVO DE DISPONIBILIDAD */
+.live-slots-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #bbf7d0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.live-slots-pill.full {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fecaca;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulseDot 1.8s infinite;
+}
+
+.live-slots-pill.full .live-dot {
+  background: #ef4444;
+  animation: none;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
 .glass-effect {
   background: var(--surface-soft);
   border: 1px solid var(--border-glass);
@@ -538,7 +577,7 @@ select:disabled {
   border-radius: 999px;
 }
 
-/* BANNER DE INSTAGRAM (NOVEDADES Y TORNEOS) */
+/* BANNER DE INSTAGRAM */
 .instagram-banner {
   margin-top: 20px;
   padding: 24px 28px;
@@ -590,17 +629,6 @@ select:disabled {
   transform: translateY(-1px);
 }
 
-@media (max-width: 680px) {
-  .instagram-banner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .btn-instagram {
-    width: 100%;
-  }
-}
-
 /* MAPA */
 .location-section {
   padding: 32px 24px;
@@ -647,23 +675,6 @@ select:disabled {
   text-align: center;
 }
 
-.footer-brand {
-  font-size: 0.88rem;
-  color: #cbd5e1;
-  margin-bottom: 4px;
-}
-
-.footer-brand a,
-.dev-credits a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.dev-credits {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
 .footer-top {
   display: flex;
   justify-content: center;
@@ -673,7 +684,9 @@ select:disabled {
   margin-bottom: 6px;
 }
 
-.footer-top .footer-brand {
+.footer-brand {
+  font-size: 0.88rem;
+  color: #cbd5e1;
   margin-bottom: 0;
 }
 
@@ -701,6 +714,17 @@ select:disabled {
 .footer-instagram:hover {
   color: #ffffff;
   border-color: rgba(91, 181, 240, 0.4);
+}
+
+.footer-brand a,
+.dev-credits a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.dev-credits {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 /* ANIMACIÓN REVEAL */
@@ -750,5 +774,14 @@ select:disabled {
 
   .videos-showcase {
     max-width: 360px;
+  }
+
+  .instagram-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-instagram {
+    width: 100%;
   }
 }

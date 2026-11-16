@@ -250,6 +250,38 @@ function actualizarHorariosDisponibles() {
   }
 }
 
+// Actualiza el indicador en vivo de turnos disponibles para la fecha elegida
+function actualizarBadgeDisponibilidad(fecha) {
+  const badge = document.getElementById('liveAvailabilityBadge');
+  if (!badge || !fecha) return;
+
+  if (!occupiedByDate[fecha]) {
+    badge.className = 'live-slots-pill';
+    badge.innerHTML = `<span class="live-dot"></span> Consultando disponibilidad...`;
+    return;
+  }
+
+  const ocupadosFecha = occupiedByDate[fecha];
+  let libres = 0;
+
+  APP_CONFIG.canchas.forEach(cancha => {
+    const ocupadosCancha = ocupadosFecha[cancha] || [];
+    APP_CONFIG.horarios.forEach(slot => {
+      if (!ocupadosCancha.includes(slot) && !esHorarioPasado(fecha, slot)) {
+        libres++;
+      }
+    });
+  });
+
+  if (libres > 0) {
+    badge.className = 'live-slots-pill';
+    badge.innerHTML = `<span class="live-dot"></span> Quedan ${libres} ${libres === 1 ? 'turno disponible' : 'turnos disponibles'} para esta fecha`;
+  } else {
+    badge.className = 'live-slots-pill full';
+    badge.innerHTML = `<span class="live-dot"></span> Agenda completa para esta fecha`;
+  }
+}
+
 // 7. Envío del formulario y generación de WhatsApp
 async function handleReservationSubmit(e) {
   e.preventDefault();
