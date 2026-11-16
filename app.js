@@ -315,7 +315,7 @@ function actualizarBadgeDisponibilidad(fecha) {
   }
 }
 
-// 7. Envío atómico del formulario y generación de comprobantes WhatsApp
+// 7. Envío atómico del formulario y generación de comprobante para el grupo
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -328,7 +328,11 @@ async function handleReservationSubmit(e) {
   const deporte = document.getElementById('deporte').value;
   const cancha = document.getElementById('cancha').value;
   const horarioRaw = document.getElementById('horario').value;
-  const nombre = document.getElementById('nombre').value.trim();
+  const nombreInput = document.getElementById('nombre');
+  const nombre = typeof formatearNombrePropio === 'function'
+    ? formatearNombrePropio(nombreInput.value.trim())
+    : nombreInput.value.trim();
+  nombreInput.value = nombre;
   const telefono = document.getElementById('telefono').value.replace(/[^\d+]/g, '').trim();
 
   if (!fecha || !deporte || !cancha || !horarioRaw || !nombre || !telefono) return;
@@ -359,7 +363,6 @@ async function handleReservationSubmit(e) {
 
   if (SCRIPT_URL && !SCRIPT_URL.includes('TU_GOOGLE')) {
     try {
-      // Envía todos los bloques en una sola petición atómica
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify({
@@ -391,40 +394,23 @@ async function handleReservationSubmit(e) {
   btnText.textContent = 'Confirmar reserva';
   if (loader) loader.style.display = 'none';
 
-  // Si otro usuario ganó el turno segundos antes, avisa y recarga disponibilidad
   if (conflictDetected) {
     statusBox.style.display = 'block';
     statusBox.className = 'status-box warning';
     statusBox.innerHTML = `
       <span class="confirm-badge">HORARIO NO DISPONIBLE</span>
-      <h4>⚠️ Turno recién ocupado</h4>
+      <h4>Turno recién ocupado</h4>
       <p>${conflictMessage}</p>
     `;
     await fetchOccupiedSlots(fecha, false);
     return;
   }
 
-  // Formatear fecha DD/MM/YYYY para los mensajes
   const [y, m, d] = fecha.split('-');
   const fechaFormateada = `${d}/${m}/${y}`;
 
-  const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || '';
-  const lineaValor = precioTurno ? `\n💰 *Valor:* ${precioTurno}` : '';
-
-  const extrasCumple = esCumple
-    ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
-    : '';
-
-  const mensajeComplejo =
-    `⚽ *NUEVA RESERVA - ${APP_CONFIG.nombreComplejo.toUpperCase()}*\n` +
-    `🎫 *Código:* #${refCode}\n` +
-    `📆 *Fecha:* ${fechaFormateada}\n` +
-    `⏰ *Horario:* ${horarioTexto}\n` +
-    `🏆 *Actividad:* ${deporte}\n` +
-    `🏟️ *Cancha:* ${cancha}${lineaValor}\n` +
-    `👤 *A nombre de:* ${nombre}\n` +
-    `📞 *Tel:* ${telefono}${extrasCumple}\n\n` +
-    `_Envío este comprobante para confirmar mi lugar._`;
+  const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || 'A confirmar';
+  const lineaValor = precioTurno !== 'A confirmar' ? `\n💰 *Valor:* ${precioTurno}` : '';
 
   const mensajeGrupo =
     `⚽ *¡Tenemos cancha en ${APP_CONFIG.nombreComplejo}!*\n` +
@@ -433,35 +419,57 @@ async function handleReservationSubmit(e) {
     `📍 ${APP_CONFIG.direccion}\n` +
     `🎫 Código de ingreso: *#${refCode}*`;
 
-  const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
   const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
 
   const statusTitle = savedInSheet
     ? '¡Turno reservado en agenda!'
-    : '⚠️ Sin conexión con la agenda automática';
+    : 'Sin conexión con la agenda automática';
 
   const statusNote = savedInSheet
-    ? 'Tu turno ya quedó agendado. Enviá el comprobante al complejo y compartilo con tu grupo:'
-    : 'No pudimos conectar con la agenda automática, pero podés enviar tu solicitud por WhatsApp:';
+    ? 'Tu turno ya quedó agendado. Guardá tu código para recepción y compartí los datos del partido con tu grupo:'
+    : 'No pudimos conectar con la agenda automática, pero podés compartir los datos del partido con tu grupo:';
 
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
   statusBox.innerHTML = `
-    <span class="confirm-badge">CÓDIGO #${refCode}</span>
+    <div class="ticket-header">
+      <span class="confirm-badge">CÓDIGO #${refCode}</span>
+      <button type="button" class="btn-copy-code" onclick="copiarCodigoReserva('#${refCode}', this)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        Copiar código
+      </button>
+    </div>
     <h4>${statusTitle}</h4>
     <p>${statusNote}</p>
-    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
-      📲 Enviar comprobante al complejo
+
+    <div class="ticket-grid">
+      <div class="ticket-cell">
+        <span class="ticket-label">Fecha</span>
+        <span class="ticket-value">${fechaFormateada}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Horario</span>
+        <span class="ticket-value">${horarioTexto}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Cancha</span>
+        <span class="ticket-value">${cancha}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Valor estimado</span>
+        <span class="ticket-value">${precioTurno}</span>
+      </div>
+    </div>
+
+    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+      Compartir partido con el grupo
     </a>
-    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-group">
-      👥 Compartir partido con el grupo
-    </a>
-    <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.85rem; text-decoration: underline; cursor: pointer;">
+    <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
       Hacer otra reserva
     </button>
   `;
 
-  window.open(waUrl, '_blank');
   await fetchOccupiedSlots(fecha, true);
 }
 
