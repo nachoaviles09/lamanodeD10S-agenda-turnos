@@ -81,7 +81,7 @@ function populateDeportes() {
   });
 }
 
-// 4. Reglas de selección de canchas según disciplina
+// 4. Reglas de selección de canchas y tarifa según disciplina
 function syncSportsRules() {
   const deporte = document.getElementById('deporte').value;
   const canchaSelect = document.getElementById('cancha');
@@ -91,12 +91,16 @@ function syncSportsRules() {
 
   if (!deporte) {
     canchaSelect.disabled = true;
-    canchaSelect.innerHTML = '<option value="">Primero elegí una disciplina...</option>';
-    horarioNote.textContent = 'Los horarios ocupados se bloquean automáticamente en tiempo real.';
+    canchaSelect.innerHTML = '<option value="">Elegí primero actividad...</option>';
+    horarioNote.textContent = 'Los horarios ocupados se bloquean automáticamente.';
     return;
   }
 
   canchaSelect.disabled = false;
+
+  const precio = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || '';
+  const notaPrecio = (APP_CONFIG.notasPrecios && APP_CONFIG.notasPrecios[deporte]) || '';
+  const textoTarifa = precio ? `Tarifa: ${precio} (${notaPrecio}) · ` : '';
 
   if (deporte === 'Fútbol 7') {
     const canchasF7 = APP_CONFIG.canchas.filter(c => c.includes('Fútbol 7'));
@@ -106,9 +110,8 @@ function syncSportsRules() {
       opt.textContent = c;
       canchaSelect.appendChild(opt);
     });
-    horarioNote.textContent = 'Turnos de 1 hora en cancha exclusiva de Fútbol 7.';
+    horarioNote.textContent = `${textoTarifa}Turnos de 1 hora en cancha exclusiva de Fútbol 7.`;
   } else {
-    // Tanto Fútbol 5 como Cumpleaños utilizan cualquiera de las 4 canchas de Fútbol 5
     const canchasF5 = APP_CONFIG.canchas.filter(c => c.includes('Fútbol 5'));
     canchaSelect.innerHTML = '<option value="">Elegí una cancha de F5...</option>';
     canchasF5.forEach(c => {
@@ -119,16 +122,16 @@ function syncSportsRules() {
     });
 
     if (deporte.includes('Cumpleaños')) {
-      // Preseleccionar Cancha 4 por comodidad, pero dejando elegir otra si está ocupada
       if (canchasF5.includes('Cancha 4 (Fútbol 5)')) {
         canchaSelect.value = 'Cancha 4 (Fútbol 5)';
       }
-      horarioNote.textContent = '🎂 El pack cumpleaños reserva 3 horas seguidas e incluye parrillas, freezer, heladeras y mobiliario.';
+      horarioNote.textContent = `${textoTarifa}Incluye parrillas, freezer, heladeras, mesas, sillas y tablones.`;
     } else {
-      horarioNote.textContent = 'Turnos de 1 hora. Los horarios ocupados se bloquean automáticamente.';
+      horarioNote.textContent = `${textoTarifa}Los horarios ocupados se bloquean automáticamente.`;
     }
   }
 }
+ 
 
 // 5. Consultar turnos ocupados al servidor (Google Apps Script)
 async function fetchOccupiedSlots(fecha) {
@@ -278,6 +281,9 @@ async function handleReservationSubmit(e) {
   const [y, m, d] = fecha.split('-');
   const fechaFormateada = `${d}/${m}/${y}`;
 
+  const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || '';
+  const lineaValor = precioTurno ? `\n💰 *Valor:* ${precioTurno}` : '';
+  
   const extrasCumple = esCumple
     ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
     : '';
@@ -288,7 +294,7 @@ async function handleReservationSubmit(e) {
     `📆 *Fecha:* ${fechaFormateada}\n` +
     `⏰ *Horario:* ${horarioTexto}\n` +
     `🏆 *Actividad:* ${deporte}\n` +
-    `🏟️ *Cancha:* ${cancha}\n` +
+    `🏟️ *Cancha:* ${cancha}${lineaValor}\n` +
     `👤 *A nombre de:* ${nombre}\n` +
     `📞 *Tel:* ${telefono}${extrasCumple}\n\n` +
     `_Envío este comprobante para confirmar mi lugar._`;
@@ -296,7 +302,7 @@ async function handleReservationSubmit(e) {
   const mensajeGrupo =
     `⚽ *¡Tenemos cancha en ${APP_CONFIG.nombreComplejo}!*\n` +
     `📆 ${fechaFormateada} · ⏰ ${horarioTexto}\n` +
-    `🏟️ ${cancha} (${deporte})\n` +
+    `🏟️ ${cancha} (${deporte})${lineaValor}\n` +
     `📍 ${APP_CONFIG.direccion}\n` +
     `🎫 Código de ingreso: *#${refCode}*`;
 

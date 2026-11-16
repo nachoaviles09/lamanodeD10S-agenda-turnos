@@ -481,6 +481,31 @@ select:disabled {
   color: var(--text-muted);
 }
 
+.sport-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sport-card-top .sport-badge {
+  margin-bottom: 0;
+}
+
+.sport-price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sport-price small {
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .amenities-bar {
   padding: 20px 24px;
   display: flex;

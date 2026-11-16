@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body>
 
@@ -18,9 +18,9 @@
   <header class="main-header">
     <div class="nav-container">
       <div class="brand-logo">
-        <img src="logo.png" alt="La Mano de Dios" class="logo-img" onerror="this.style.display='none'">
+        <img src="logo.jpg" alt="lamanoded10s" class="logo-img" onerror="this.style.display='none'">
         <div class="brand-text">
-          <h1>La Mano de Dios</h1>
+          <h1>lamanoded10s</h1>
           <span>Complejo de Fútbol 5 y 7</span>
         </div>
       </div>
@@ -30,8 +30,7 @@
       </button>
       
       <nav class="nav-menu">
-        <a href="#reservas" class="nav-link active">Reservar</a>
-        <a href="#galeria" class="nav-link">El Predio</a>
+        <a href="#galeria" class="nav-link">El Complejo</a>
         <a href="#deportes" class="nav-link">Canchas y Eventos</a>
         <a href="#ubicacion" class="nav-link">Ubicación</a>
       </nav>
@@ -100,7 +99,7 @@
                 <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
               </div>
               <div class="form-group">
-                <label for="telefono">Teléfono / WhatsApp</label>
+                <label for="telefono">Teléfono</label>
                 <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3431234567" required>
               </div>
             </div>
@@ -133,7 +132,7 @@
         <div class="video-card glass-effect">
           <div class="video-wrapper">
             <video controls playsinline preload="metadata">
-              <source src="videos/video_1.mp4" type="video/mp4">
+              <source src="videos/video_2.mp4" type="video/mp4">
               Tu navegador no soporta la reproducción de video.
             </video>
           </div>
@@ -148,7 +147,7 @@
         <div class="video-card glass-effect">
           <div class="video-wrapper">
             <video controls playsinline preload="metadata">
-              <source src="videos/video_2.mp4" type="video/mp4">
+              <source src="videos/video_1.mp4" type="video/mp4">
               Tu navegador no soporta la reproducción de video.
             </video>
           </div>
@@ -166,24 +165,33 @@
       <div class="section-title reveal">
         <span class="tag">Servicios</span>
         <h3>Canchas y eventos</h3>
-        <p>Opciones para partidos semanales, torneos o festejos privados.</p>
+        <p>Opciones para partidos, torneos o festejos privados.</p>
       </div>
 
       <div class="sports-grid reveal delay-1">
         <div class="sport-card glass-effect">
-          <span class="sport-badge">4 canchas</span>
+          <div class="sport-card-top">
+            <span class="sport-badge">4 canchas</span>
+            <span class="sport-price">$35.000 <small>/ hora</small></span>
+          </div>
           <h4>Fútbol 5</h4>
           <p>Césped sintético con iluminación LED para partidos de 1 hora.</p>
         </div>
 
         <div class="sport-card glass-effect">
-          <span class="sport-badge">1 cancha</span>
+          <div class="sport-card-top">
+            <span class="sport-badge">1 cancha · Inauguración</span>
+            <span class="sport-price">$65.000 <small>/ hora</small></span>
+          </div>
           <h4>Fútbol 7</h4>
           <p>Cancha amplia reglamentaria para equipos de 7 jugadores por lado.</p>
         </div>
 
         <div class="sport-card glass-effect highlight-card">
-          <span class="sport-badge">Pack 3 horas</span>
+          <div class="sport-card-top">
+            <span class="sport-badge">Pack 3 horas</span>
+            <span class="sport-price">$100.000 <small>/ evento</small></span>
+          </div>
           <h4>Cumpleaños y eventos</h4>
           <p>Incluye 1 cancha de F5 por 3 horas, parrillas, freezer, heladeras, mesas, sillas y tablones.</p>
         </div>
@@ -194,7 +202,7 @@
         <span class="amenities-label">Comodidades del predio:</span>
         <div class="amenities-pills">
           <span class="amenity-pill">Estacionamiento propio</span>
-          <span class="amenity-pill">Bar tercer tiempo</span>
+          <span class="amenity-pill">Bar</span>
           <span class="amenity-pill">Parrillas</span>
           <span class="amenity-pill">2 baños completos</span>
           <span class="amenity-pill">Freezer y heladeras</span>
@@ -225,14 +233,14 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-content">
-      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong> · <a href="cancelar.html">Cancelar un turno</a></p>
+      <p class="footer-brand">© 2026 <strong>La Mano de Dios</strong></p>
       <p class="dev-credits">
         Desarrollo por <a href="https://github.com" target="_blank" rel="noopener noreferrer">Ignacio Aviles Peltzer</a>
       </p>
     </div>
   </footer>
 
-  <script src="config.js?v=4"></script>
-  <script src="app.js?v=26"></script>
+  <script src="config.js?v=5"></script>
+  <script src="app.js?v=27"></script>
 </body>
 </html>
