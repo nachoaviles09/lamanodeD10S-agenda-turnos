@@ -601,6 +601,45 @@ select:disabled {
   color: var(--text-muted);
 }
 
+.footer-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.footer-top .footer-brand {
+  margin-bottom: 0;
+}
+
+.footer-instagram {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.footer-instagram svg {
+  width: 15px;
+  height: 15px;
+  fill: var(--accent);
+}
+
+.footer-instagram:hover {
+  color: #ffffff;
+  border-color: rgba(91, 181, 240, 0.4);
+}
+
 /* ANIMACIÓN REVEAL */
 .reveal {
   opacity: 0;

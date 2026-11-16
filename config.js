@@ -3,6 +3,7 @@ const CONFIG = {
   subtitulo: "Complejo de Fútbol 5 y 7",
   direccion: "Fraternidad y Gobernador Crespo, Paraná",
   prefijoCodigo: "LMD",
+  pinRecepcion: "1010", // 👈 PIN de 4 dígitos para el panel de ingreso
   whatsappContacto: "5493434717233", // 👈 Reemplazar por el WhatsApp real del complejo
   scriptURL: "https://script.google.com/macros/s/AKfycbyjDWqXvLAgq-lOA58aRd38qdPYI0_s5tYriX2PKG69AJrOxCjifBS2wyXsRTENen3b/exec", // 👈 Pegar acá tu URL /exec
 

@@ -41,6 +41,111 @@
       padding-bottom: 40px;
     }
 
+    /* PANTALLA DE BLOQUEO POR PIN */
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(7, 12, 22, 0.96);
+      backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .pin-overlay.hidden {
+      display: none;
+    }
+
+    .pin-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .pin-card.shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .pin-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      margin-bottom: 12px;
+    }
+
+    .pin-card h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .pin-card p {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .pin-input {
+      width: 100%;
+      background: var(--bg-dark);
+      border: 1.5px solid rgba(91, 181, 240, 0.35);
+      border-radius: 12px;
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 12px;
+      text-align: center;
+      padding: 12px 10px 12px 22px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .pin-input:focus {
+      border-color: var(--accent);
+    }
+
+    .pin-error {
+      display: none;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      margin-bottom: 12px;
+    }
+
+    .pin-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent-btn);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.94rem;
+      cursor: pointer;
+    }
+
+    .pin-btn:hover {
+      background: var(--accent-btn-hover);
+    }
+
+    /* TOPBAR */
     .topbar {
       background: rgba(10, 17, 30, 0.92);
       border-bottom: 1px solid var(--border);
@@ -55,6 +160,7 @@
       max-width: 900px;
       margin: 0 auto;
       display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 12px;
     }
@@ -86,6 +192,23 @@
       color: var(--accent);
       font-weight: 600;
       display: block;
+    }
+
+    .btn-lock {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-lock:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     .container {
@@ -244,7 +367,7 @@
       opacity: 0.92;
     }
 
-    /* CONTADORES DEL DÍA (2 COLUMNAS) */
+    /* CONTADORES DEL DÍA */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -404,6 +527,18 @@
 </head>
 <body>
 
+  <!-- PANTALLA DE BLOQUEO POR PIN -->
+  <div class="pin-overlay" id="pinOverlay">
+    <div class="pin-card" id="pinCard">
+      <img src="logo.jpg" alt="lamanoded10s" class="pin-logo" onerror="this.style.display='none'">
+      <h2>Acceso a Recepción</h2>
+      <p>Ingresá el PIN de 4 dígitos para abrir el panel.</p>
+      <input type="password" id="pinInput" class="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off">
+      <div class="pin-error" id="pinError">PIN incorrecto. Intentá nuevamente.</div>
+      <button type="button" class="pin-btn" onclick="verificarPin()">Ingresar</button>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
@@ -413,11 +548,12 @@
           <span>Control de Acceso en Recepción</span>
         </div>
       </div>
+      <button type="button" class="btn-lock" onclick="bloquearPanel()">🔒 Bloquear</button>
     </div>
   </header>
 
   <main class="container">
-    <!-- VALIDADOR DE CÓDIGO (ÚNICA VÍA DE INGRESO) -->
+    <!-- VALIDADOR DE CÓDIGO -->
     <section class="validator-card">
       <div class="validator-header">
         <h2>Validar Ingreso de Jugadores</h2>
@@ -467,39 +603,96 @@
     </section>
   </main>
 
-  <script src="config.js?v=6"></script>
+  <script src="config.js?v=7"></script>
   <script>
     const APP_CONFIG = window.APP_CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : {});
     const SCRIPT_URL = APP_CONFIG.scriptURL || '';
     const PREFIJO = APP_CONFIG.prefijoCodigo || 'LMD';
+    const PIN_CORRECTO = String(APP_CONFIG.pinRecepcion || '1010').trim();
+    const SESSION_KEY = 'lmd_recepcion_auth';
 
     let cargandoAgenda = false;
+    let intervaloSync = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('prefixLabel').textContent = `#${PREFIJO}-`;
 
-      const input = document.getElementById('codeInput');
-      input.addEventListener('keydown', (e) => {
+      const pinInput = document.getElementById('pinInput');
+      pinInput.addEventListener('input', () => {
+        pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 4);
+        document.getElementById('pinError').style.display = 'none';
+        if (pinInput.value.length === 4) {
+          verificarPin();
+        }
+      });
+
+      pinInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          verificarPin();
+        }
+      });
+
+      const codeInput = document.getElementById('codeInput');
+      codeInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           validarIngreso();
         }
       });
 
+      if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        desbloquearPanel();
+      } else {
+        pinInput.focus();
+      }
+    });
+
+    function verificarPin() {
+      const pinInput = document.getElementById('pinInput');
+      const pinCard = document.getElementById('pinCard');
+      const pinError = document.getElementById('pinError');
+
+      if (pinInput.value === PIN_CORRECTO) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        pinInput.value = '';
+        desbloquearPanel();
+      } else {
+        pinError.style.display = 'block';
+        pinCard.classList.remove('shake');
+        void pinCard.offsetWidth;
+        pinCard.classList.add('shake');
+        pinInput.value = '';
+        pinInput.focus();
+      }
+    }
+
+    function desbloquearPanel() {
+      document.getElementById('pinOverlay').classList.add('hidden');
       cargarResumenHoy();
 
-      setInterval(() => {
-        if (!document.hidden && !cargandoAgenda) {
-          cargarResumenHoy();
-        }
-      }, 30000);
+      if (!intervaloSync) {
+        intervaloSync = setInterval(() => {
+          if (!document.hidden && !cargandoAgenda && sessionStorage.getItem(SESSION_KEY) === '1') {
+            cargarResumenHoy();
+          }
+        }, 30000);
 
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && !cargandoAgenda) {
-          cargarResumenHoy();
-        }
-      });
-    });
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden && !cargandoAgenda && sessionStorage.getItem(SESSION_KEY) === '1') {
+            cargarResumenHoy();
+          }
+        });
+      }
+    }
+
+    function bloquearPanel() {
+      sessionStorage.removeItem(SESSION_KEY);
+      document.getElementById('pinOverlay').classList.remove('hidden');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').style.display = 'none';
+      document.getElementById('pinInput').focus();
+    }
 
     async function validarIngreso() {
       const input = document.getElementById('codeInput');
