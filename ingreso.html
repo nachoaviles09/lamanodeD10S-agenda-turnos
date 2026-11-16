@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control de Acceso — lamanoded10s</title>
-  <link rel="icon" type="image/png" href="logo.jpg">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -76,8 +76,9 @@
 
     .brand h1 {
       font-family: 'Montserrat', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #ffffff;
     }
 
     .brand span {
@@ -406,7 +407,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <img src="logo.png" alt="La Mano de Dios" onerror="this.style.display='none'">
+        <img src="logo.jpg" alt="lamanoded10s" onerror="this.style.display='none'">
         <div>
           <h1 id="complexName">lamanoded10s</h1>
           <span>Control de Acceso en Recepción</span>
@@ -466,7 +467,7 @@
     </section>
   </main>
 
-  <script src="config.js?v=5"></script>
+  <script src="config.js?v=6"></script>
   <script>
     const APP_CONFIG = window.APP_CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : {});
     const SCRIPT_URL = APP_CONFIG.scriptURL || '';
@@ -475,9 +476,6 @@
     let cargandoAgenda = false;
 
     document.addEventListener('DOMContentLoaded', () => {
-      if (APP_CONFIG.nombreComplejo) {
-        document.getElementById('complexName').textContent = APP_CONFIG.nombreComplejo.toUpperCase();
-      }
       document.getElementById('prefixLabel').textContent = `#${PREFIJO}-`;
 
       const input = document.getElementById('codeInput');
