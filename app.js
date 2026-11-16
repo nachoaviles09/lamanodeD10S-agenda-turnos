@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('reservationForm');
 
   fechaInput.addEventListener('change', async () => {
-    await fetchOccupiedSlots(fechaInput.value);
+    await fetchOccupiedSlots(fechaInput.value, false);
     actualizarHorariosDisponibles();
   });
 
@@ -29,10 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarHorariosDisponibles();
   });
 
+  // Actualiza disponibilidad silenciosamente cuando el jugador vuelve a la pestaña del navegador
+  document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden && fechaInput && fechaInput.value) {
+      await fetchOccupiedSlots(fechaInput.value, true);
+    }
+  });
+
   form.addEventListener('submit', handleReservationSubmit);
 });
 
-// 1. Navegación móvil y scroll suave
+// 1. Navegación móvil
 function initHeaderAndNav() {
   const menuToggle = document.querySelector('.menu-toggle');
   const navMenu = document.querySelector('.nav-menu');
@@ -64,7 +71,7 @@ function initDateLimit() {
   const minDate = `${yyyy}-${mm}-${dd}`;
   fechaInput.min = minDate;
   fechaInput.value = minDate;
-  fetchOccupiedSlots(minDate);
+  fetchOccupiedSlots(minDate, false);
 }
 
 // 3. Cargar disciplinas desde config.js
@@ -133,7 +140,7 @@ function syncSportsRules() {
 }
 
 // 5. Consultar turnos ocupados al servidor (Google Apps Script)
-async function fetchOccupiedSlots(fecha) {
+async function fetchOccupiedSlots(fecha, silent = false) {
   if (!fecha) return;
 
   if (!SCRIPT_URL || SCRIPT_URL.includes('TU_GOOGLE')) {
@@ -143,14 +150,18 @@ async function fetchOccupiedSlots(fecha) {
   }
 
   const badge = document.getElementById('liveAvailabilityBadge');
-  if (badge) {
-    badge.className = 'live-slots-pill';
-    badge.innerHTML = `<span class="live-dot"></span> Consultando disponibilidad...`;
-  }
-
   const horarioSelect = document.getElementById('horario');
-  horarioSelect.disabled = true;
-  horarioSelect.innerHTML = '<option value="">Consultando disponibilidad...</option>';
+
+  if (!silent) {
+    if (badge) {
+      badge.className = 'live-slots-pill';
+      badge.innerHTML = `<span class="live-dot"></span> Consultando disponibilidad...`;
+    }
+    if (horarioSelect) {
+      horarioSelect.disabled = true;
+      horarioSelect.innerHTML = '<option value="">Consultando disponibilidad...</option>';
+    }
+  }
 
   try {
     const res = await fetch(`${SCRIPT_URL}?action=getOccupied&fecha=${encodeURIComponent(fecha)}`);
@@ -204,6 +215,7 @@ function actualizarHorariosDisponibles() {
     return;
   }
 
+  const valorPrevio = horarioSelect.value;
   const ocupadosEnCancha = (occupiedByDate[fecha] && occupiedByDate[fecha][cancha]) || [];
   const listaHorarios = APP_CONFIG.horarios;
   const esCumple = deporte.includes('Cumpleaños');
@@ -261,6 +273,14 @@ function actualizarHorariosDisponibles() {
       horarioSelect.appendChild(opt);
     }
   }
+
+  // Conserva la selección si sigue libre tras una recarga silenciosa
+  if (valorPrevio) {
+    const opcionExistente = Array.from(horarioSelect.options).find(o => o.value === valorPrevio && !o.disabled);
+    if (opcionExistente) {
+      horarioSelect.value = valorPrevio;
+    }
+  }
 }
 
 // Actualiza el indicador en vivo de turnos disponibles para la fecha elegida
@@ -295,7 +315,7 @@ function actualizarBadgeDisponibilidad(fecha) {
   }
 }
 
-// 7. Envío del formulario y generación de WhatsApp
+// 7. Envío atómico del formulario y generación de comprobantes WhatsApp
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -309,7 +329,7 @@ async function handleReservationSubmit(e) {
   const cancha = document.getElementById('cancha').value;
   const horarioRaw = document.getElementById('horario').value;
   const nombre = document.getElementById('nombre').value.trim();
-  const telefono = document.getElementById('telefono').value.trim();
+  const telefono = document.getElementById('telefono').value.replace(/[^\d+]/g, '').trim();
 
   if (!fecha || !deporte || !cancha || !horarioRaw || !nombre || !telefono) return;
 
@@ -334,39 +354,63 @@ async function handleReservationSubmit(e) {
   const refCode = `${prefijo}-${randomNum}`;
 
   let savedInSheet = false;
+  let conflictDetected = false;
+  let conflictMessage = '';
 
   if (SCRIPT_URL && !SCRIPT_URL.includes('TU_GOOGLE')) {
     try {
-      for (const slot of slotsAGuardar) {
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'reservar',
-            code: `#${refCode}`,
-            fecha,
-            horario: slot,
-            deporte,
-            cancha,
-            nombre,
-            telefono
-          })
-        });
-        const result = await response.json();
-        if (result.status === 'ok' || result.result === 'success') {
-          savedInSheet = true;
-        }
+      // Envía todos los bloques en una sola petición atómica
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'reservar',
+          code: `#${refCode}`,
+          fecha,
+          horario: slotsAGuardar[0],
+          slots: slotsAGuardar,
+          deporte,
+          cancha,
+          nombre,
+          telefono
+        })
+      });
+      const result = await response.json();
+
+      if (result.status === 'conflict') {
+        conflictDetected = true;
+        conflictMessage = result.message || 'Ese horario se acaba de ocupar. Elegí otro turno disponible.';
+      } else if (result.status === 'ok' || result.result === 'success') {
+        savedInSheet = true;
       }
     } catch (err) {
       console.error('Error guardando reserva:', err);
     }
   }
 
+  btnSubmit.disabled = false;
+  btnText.textContent = 'Confirmar reserva';
+  if (loader) loader.style.display = 'none';
+
+  // Si otro usuario ganó el turno segundos antes, avisa y recarga disponibilidad
+  if (conflictDetected) {
+    statusBox.style.display = 'block';
+    statusBox.className = 'status-box warning';
+    statusBox.innerHTML = `
+      <span class="confirm-badge">HORARIO NO DISPONIBLE</span>
+      <h4>⚠️ Turno recién ocupado</h4>
+      <p>${conflictMessage}</p>
+    `;
+    await fetchOccupiedSlots(fecha, false);
+    return;
+  }
+
+  // Formatear fecha DD/MM/YYYY para los mensajes
   const [y, m, d] = fecha.split('-');
   const fechaFormateada = `${d}/${m}/${y}`;
 
   const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || '';
   const lineaValor = precioTurno ? `\n💰 *Valor:* ${precioTurno}` : '';
-  
+
   const extrasCumple = esCumple
     ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
     : '';
@@ -392,17 +436,13 @@ async function handleReservationSubmit(e) {
   const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
   const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
 
-  btnSubmit.disabled = false;
-  btnText.textContent = 'Confirmar reserva';
-  if (loader) loader.style.display = 'none';
-
   const statusTitle = savedInSheet
     ? '¡Turno reservado en agenda!'
     : '⚠️ Sin conexión con la agenda automática';
 
   const statusNote = savedInSheet
-    ? 'Tu turno ya quedó agendado. Podés compartir los datos del partido con tu grupo desde el botón de abajo:'
-    : 'No pudimos conectar con la agenda automática, pero podés compartir los datos del partido con tu grupo:';
+    ? 'Tu turno ya quedó agendado. Enviá el comprobante al complejo y compartilo con tu grupo:'
+    : 'No pudimos conectar con la agenda automática, pero podés enviar tu solicitud por WhatsApp:';
 
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
@@ -410,7 +450,10 @@ async function handleReservationSubmit(e) {
     <span class="confirm-badge">CÓDIGO #${refCode}</span>
     <h4>${statusTitle}</h4>
     <p>${statusNote}</p>
-    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
+    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
+      📲 Enviar comprobante al complejo
+    </a>
+    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-group">
       👥 Compartir partido con el grupo
     </a>
     <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.85rem; text-decoration: underline; cursor: pointer;">
@@ -419,8 +462,7 @@ async function handleReservationSubmit(e) {
   `;
 
   window.open(waUrl, '_blank');
-  await fetchOccupiedSlots(fecha);
-  actualizarHorariosDisponibles();
+  await fetchOccupiedSlots(fecha, true);
 }
 
 function resetReservationFormUI() {

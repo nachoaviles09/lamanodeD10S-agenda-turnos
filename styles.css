@@ -429,6 +429,25 @@ select:disabled {
   text-decoration: none;
 }
 
+.btn-whatsapp-group {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border-radius: 10px;
+  background: rgba(91, 181, 240, 0.12);
+  border: 1px solid rgba(91, 181, 240, 0.35);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-whatsapp-group:hover {
+  background: rgba(91, 181, 240, 0.22);
+}
+
 /* GALERÍA DE VIDEOS VERTICALES (PROPORCIÓN NATIVA 9:16) */
 .videos-showcase {
   max-width: 680px;
