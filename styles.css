@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg-dark: #0a111e;
   --surface: #111c2e;
   --surface-soft: rgba(17, 28, 46, 0.72);
@@ -117,9 +118,16 @@ body {
 
 /* HERO SECTION */
 .hero-section {
-  padding: 72px 24px 56px;
+  position: relative;
+  padding: 84px 24px 68px;
   text-align: center;
   border-bottom: 1px solid var(--border-glass);
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(91, 181, 240, 0.14), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-position: center, center, center;
 }
 
 .hero-content {
@@ -802,5 +810,77 @@ select:disabled {
 
   .btn-instagram {
     width: 100%;
+  }
+}
+
+/* SCROLLBAR A MEDIDA EN PC */
+::-webkit-scrollbar {
+  width: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070c16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 999px;
+  border: 2px solid #070c16;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ELEVACIÓN Y BRILLO SUTIL EN TARJETAS (PC) */
+.sport-card,
+.form-container,
+.amenities-bar,
+.instagram-banner {
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.sport-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(91, 181, 240, 0.35);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.form-container:focus-within {
+  border-color: rgba(91, 181, 240, 0.32);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+
+/* ANIMACIÓN BOTÓN MENÚ MÓVIL */
+.menu-toggle span {
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.menu-toggle.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 680px) {
+  .hero-section {
+    padding: 52px 20px 44px;
+  }
+
+  /* Evita el zoom automático en iPhone/Safari al tocar campos */
+  input,
+  select {
+    font-size: 16px;
+    padding: 12px 13px;
+  }
+
+  .form-container {
+    padding: 22px 18px;
   }
 }

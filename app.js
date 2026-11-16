@@ -491,5 +491,24 @@ function initScrollReveal() {
     });
   }, { threshold: 0.1 });
 
+// 10. Marcar enlace activo en la barra superior según la sección visible
+function initScrollSpy() {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        });
+      }
+    });
+  }, { rootMargin: '-35% 0px -55% 0px' });
+
+  sections.forEach(sec => observer.observe(sec));
+}
+
   reveals.forEach(el => observer.observe(el));
 }
