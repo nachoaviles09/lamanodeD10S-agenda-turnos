@@ -538,6 +538,69 @@ select:disabled {
   border-radius: 999px;
 }
 
+/* BANNER DE INSTAGRAM (NOVEDADES Y TORNEOS) */
+.instagram-banner {
+  margin-top: 20px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-color: rgba(91, 181, 240, 0.22);
+}
+
+.instagram-banner-text .sport-badge {
+  margin-bottom: 8px;
+}
+
+.instagram-banner-text h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.instagram-banner-text p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  max-width: 540px;
+}
+
+.btn-instagram {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(91, 181, 240, 0.12);
+  border: 1px solid rgba(91, 181, 240, 0.35);
+  color: #ffffff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-instagram svg {
+  width: 17px;
+  height: 17px;
+  fill: var(--accent);
+}
+
+.btn-instagram:hover {
+  background: rgba(91, 181, 240, 0.22);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 680px) {
+  .instagram-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-instagram {
+    width: 100%;
+  }
+}
+
 /* MAPA */
 .location-section {
   padding: 32px 24px;
