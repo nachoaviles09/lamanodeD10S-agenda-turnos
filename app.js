@@ -131,11 +131,22 @@ function syncSportsRules() {
     }
   }
 }
- 
 
 // 5. Consultar turnos ocupados al servidor (Google Apps Script)
 async function fetchOccupiedSlots(fecha) {
-  if (!fecha || !SCRIPT_URL || SCRIPT_URL.includes('TU_GOOGLE')) return;
+  if (!fecha) return;
+
+  if (!SCRIPT_URL || SCRIPT_URL.includes('TU_GOOGLE')) {
+    occupiedByDate[fecha] = occupiedByDate[fecha] || {};
+    actualizarBadgeDisponibilidad(fecha);
+    return;
+  }
+
+  const badge = document.getElementById('liveAvailabilityBadge');
+  if (badge) {
+    badge.className = 'live-slots-pill';
+    badge.innerHTML = `<span class="live-dot"></span> Consultando disponibilidad...`;
+  }
 
   const horarioSelect = document.getElementById('horario');
   horarioSelect.disabled = true;
@@ -152,6 +163,9 @@ async function fetchOccupiedSlots(fecha) {
   } catch (err) {
     console.warn('No se pudo verificar disponibilidad en vivo:', err);
     occupiedByDate[fecha] = occupiedByDate[fecha] || {};
+  } finally {
+    actualizarBadgeDisponibilidad(fecha);
+    actualizarHorariosDisponibles();
   }
 }
 
@@ -166,7 +180,6 @@ function esHorarioPasado(fechaSeleccionada, slot) {
   if (fechaSeleccionada < hoyStr) return true;
   if (fechaSeleccionada > hoyStr) return false;
 
-  // Extrae la hora de inicio (ej. "19:00 a 20:00 hs" -> 19 y 00)
   const horaInicioStr = slot.split(' a ')[0].trim();
   const [horas, minutos] = horaInicioStr.split(':').map(Number);
 
@@ -183,6 +196,8 @@ function actualizarHorariosDisponibles() {
   const cancha = document.getElementById('cancha').value;
   const horarioSelect = document.getElementById('horario');
 
+  actualizarBadgeDisponibilidad(fecha);
+
   if (!fecha || !deporte || !cancha) {
     horarioSelect.disabled = true;
     horarioSelect.innerHTML = '<option value="">Elegí fecha y cancha...</option>';
@@ -197,7 +212,6 @@ function actualizarHorariosDisponibles() {
   horarioSelect.innerHTML = '<option value="">Seleccioná tu horario...</option>';
 
   if (!esCumple) {
-    // Turnos normales de 1 hora
     listaHorarios.forEach(slot => {
       const opt = document.createElement('option');
       const ocupado = ocupadosEnCancha.includes(slot);
@@ -217,7 +231,6 @@ function actualizarHorariosDisponibles() {
       horarioSelect.appendChild(opt);
     });
   } else {
-    // Bloques de 3 horas consecutivas para Cumpleaños
     for (let i = 0; i <= listaHorarios.length - 3; i++) {
       const s1 = listaHorarios[i];
       const s2 = listaHorarios[i + 1];
@@ -324,7 +337,6 @@ async function handleReservationSubmit(e) {
 
   if (SCRIPT_URL && !SCRIPT_URL.includes('TU_GOOGLE')) {
     try {
-      // Guarda 1 fila para turnos normales o 3 filas consecutivas para Cumpleaños
       for (const slot of slotsAGuardar) {
         const response = await fetch(SCRIPT_URL, {
           method: 'POST',
@@ -349,7 +361,6 @@ async function handleReservationSubmit(e) {
     }
   }
 
-  // Formatear fecha DD/MM/YYYY para el mensaje
   const [y, m, d] = fecha.split('-');
   const fechaFormateada = `${d}/${m}/${y}`;
 
@@ -382,10 +393,10 @@ async function handleReservationSubmit(e) {
   const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
 
   btnSubmit.disabled = false;
-  btnText.textContent = 'Generar Solicitud de Reserva 🚀';
+  btnText.textContent = 'Confirmar reserva';
   if (loader) loader.style.display = 'none';
 
- const statusTitle = savedInSheet
+  const statusTitle = savedInSheet
     ? '¡Turno reservado en agenda!'
     : '⚠️ Sin conexión con la agenda automática';
 
