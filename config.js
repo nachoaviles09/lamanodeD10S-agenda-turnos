@@ -1,5 +1,5 @@
 const CONFIG = {
-  nombreComplejo: "lamanoded10s",
+  nombreComplejo: "LAMANODED10S",
   subtitulo: "Complejo de Fútbol 5 y 7",
   direccion: "Fraternidad y Gobernador Crespo, Paraná",
   prefijoCodigo: "LMD",
