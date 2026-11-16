@@ -155,7 +155,28 @@ async function fetchOccupiedSlots(fecha) {
   }
 }
 
-// 6. Armar dropdown de horarios (1 hora normal o bloques de 3 horas para Cumpleaños)
+// Verifica si la hora de inicio del turno ya pasó cuando la fecha elegida es hoy
+function esHorarioPasado(fechaSeleccionada, slot) {
+  const ahora = new Date();
+  const yyyy = ahora.getFullYear();
+  const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+  const dd = String(ahora.getDate()).padStart(2, '0');
+  const hoyStr = `${yyyy}-${mm}-${dd}`;
+
+  if (fechaSeleccionada < hoyStr) return true;
+  if (fechaSeleccionada > hoyStr) return false;
+
+  // Extrae la hora de inicio (ej. "19:00 a 20:00 hs" -> 19 y 00)
+  const horaInicioStr = slot.split(' a ')[0].trim();
+  const [horas, minutos] = horaInicioStr.split(':').map(Number);
+
+  const minutosSlot = horas * 60 + (minutos || 0);
+  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+
+  return minutosSlot <= minutosActuales;
+}
+
+// 6. Armar dropdown de horarios bloqueando ocupados y horarios ya pasados
 function actualizarHorariosDisponibles() {
   const fecha = document.getElementById('fecha').value;
   const deporte = document.getElementById('deporte').value;
@@ -164,7 +185,7 @@ function actualizarHorariosDisponibles() {
 
   if (!fecha || !deporte || !cancha) {
     horarioSelect.disabled = true;
-    horarioSelect.innerHTML = '<option value="">Primero seleccioná fecha, disciplina y cancha...</option>';
+    horarioSelect.innerHTML = '<option value="">Elegí fecha y cancha...</option>';
     return;
   }
 
@@ -180,9 +201,19 @@ function actualizarHorariosDisponibles() {
     listaHorarios.forEach(slot => {
       const opt = document.createElement('option');
       const ocupado = ocupadosEnCancha.includes(slot);
+      const pasado = esHorarioPasado(fecha, slot);
+
       opt.value = slot;
-      opt.disabled = ocupado;
-      opt.textContent = ocupado ? `${slot} (Ocupado)` : `${slot} — Disponible`;
+      opt.disabled = ocupado || pasado;
+
+      if (pasado) {
+        opt.textContent = `${slot} (Horario pasado)`;
+      } else if (ocupado) {
+        opt.textContent = `${slot} (Ocupado)`;
+      } else {
+        opt.textContent = `${slot} — Disponible`;
+      }
+
       horarioSelect.appendChild(opt);
     });
   } else {
@@ -192,6 +223,7 @@ function actualizarHorariosDisponibles() {
       const s2 = listaHorarios[i + 1];
       const s3 = listaHorarios[i + 2];
 
+      const pasado = esHorarioPasado(fecha, s1);
       const ocupado =
         ocupadosEnCancha.includes(s1) ||
         ocupadosEnCancha.includes(s2) ||
@@ -203,8 +235,16 @@ function actualizarHorariosDisponibles() {
 
       const opt = document.createElement('option');
       opt.value = JSON.stringify({ label: etiqueta, slots: [s1, s2, s3] });
-      opt.disabled = ocupado;
-      opt.textContent = ocupado ? `${etiqueta} (No disponible)` : `${etiqueta} — Disponible`;
+      opt.disabled = ocupado || pasado;
+
+      if (pasado) {
+        opt.textContent = `${etiqueta} (Horario pasado)`;
+      } else if (ocupado) {
+        opt.textContent = `${etiqueta} (No disponible)`;
+      } else {
+        opt.textContent = `${etiqueta} — Disponible`;
+      }
+
       horarioSelect.appendChild(opt);
     }
   }
