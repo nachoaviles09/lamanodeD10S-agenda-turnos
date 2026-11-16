@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateDeportes();
   configurarBotonFlotante();
   initScrollReveal();
+  initScrollSpy();
 
   const fechaInput = document.getElementById('fecha');
   const deporteSelect = document.getElementById('deporte');
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarHorariosDisponibles();
   });
 
-  // Actualiza disponibilidad silenciosamente cuando el jugador vuelve a la pestaña del navegador
+  // Actualiza disponibilidad silenciosamente cuando el jugador vuelve a la pestaña
   document.addEventListener('visibilitychange', async () => {
     if (!document.hidden && fechaInput && fechaInput.value) {
       await fetchOccupiedSlots(fechaInput.value, true);
@@ -274,7 +275,6 @@ function actualizarHorariosDisponibles() {
     }
   }
 
-  // Conserva la selección si sigue libre tras una recarga silenciosa
   if (valorPrevio) {
     const opcionExistente = Array.from(horarioSelect.options).find(o => o.value === valorPrevio && !o.disabled);
     if (opcionExistente) {
@@ -315,7 +315,71 @@ function actualizarBadgeDisponibilidad(fecha) {
   }
 }
 
-// 7. Envío atómico del formulario y generación de comprobante para el grupo
+// Utilidades de formato y copiado al portapapeles
+function formatearNombrePropio(texto) {
+  return texto
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ');
+}
+
+function copiarFallback(texto, callback) {
+  const area = document.createElement('textarea');
+  area.value = texto;
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.focus();
+  area.select();
+  try {
+    document.execCommand('copy');
+    callback();
+  } catch (err) {
+    console.error('No se pudo copiar:', err);
+  }
+  document.body.removeChild(area);
+}
+
+window.copiarCodigoReserva = function(codigo, btn) {
+  const marcarCopiado = () => {
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ¡Copiado!`;
+    btn.style.borderColor = '#22c55e';
+    btn.style.color = '#22c55e';
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(codigo).then(marcarCopiado).catch(() => copiarFallback(codigo, marcarCopiado));
+  } else {
+    copiarFallback(codigo, marcarCopiado);
+  }
+};
+
+window.copiarDireccion = function(btn) {
+  const dir = `${APP_CONFIG.direccion}, Entre Ríos`;
+  const marcarCopiado = () => {
+    const original = btn.textContent;
+    btn.textContent = 'Dirección copiada';
+    setTimeout(() => {
+      btn.textContent = original;
+    }, 2000);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(dir).then(marcarCopiado).catch(() => copiarFallback(dir, marcarCopiado));
+  } else {
+    copiarFallback(dir, marcarCopiado);
+  }
+};
+
+// 7. Envío atómico del formulario, tarjeta con código y redirección directa a WhatsApp del complejo
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -329,9 +393,7 @@ async function handleReservationSubmit(e) {
   const cancha = document.getElementById('cancha').value;
   const horarioRaw = document.getElementById('horario').value;
   const nombreInput = document.getElementById('nombre');
-  const nombre = typeof formatearNombrePropio === 'function'
-    ? formatearNombrePropio(nombreInput.value.trim())
-    : nombreInput.value.trim();
+  const nombre = formatearNombrePropio(nombreInput.value.trim());
   nombreInput.value = nombre;
   const telefono = document.getElementById('telefono').value.replace(/[^\d+]/g, '').trim();
 
@@ -356,6 +418,7 @@ async function handleReservationSubmit(e) {
   const prefijo = APP_CONFIG.prefijoCodigo || 'LMD';
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const refCode = `${prefijo}-${randomNum}`;
+  const codigoCompleto = `#${refCode}`;
 
   let savedInSheet = false;
   let conflictDetected = false;
@@ -367,7 +430,7 @@ async function handleReservationSubmit(e) {
         method: 'POST',
         body: JSON.stringify({
           action: 'reservar',
-          code: `#${refCode}`,
+          code: codigoCompleto,
           fecha,
           horario: slotsAGuardar[0],
           slots: slotsAGuardar,
@@ -411,36 +474,35 @@ async function handleReservationSubmit(e) {
 
   const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || 'A confirmar';
   const lineaValor = precioTurno !== 'A confirmar' ? `\n💰 *Valor:* ${precioTurno}` : '';
+  const extrasCumple = esCumple
+    ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
+    : '';
 
-  const mensajeGrupo =
-    `⚽ *¡Tenemos cancha en ${APP_CONFIG.nombreComplejo}!*\n` +
-    `📆 ${fechaFormateada} · ⏰ ${horarioTexto}\n` +
-    `🏟️ ${cancha} (${deporte})${lineaValor}\n` +
-    `📍 ${APP_CONFIG.direccion}\n` +
-    `🎫 Código de ingreso: *#${refCode}*`;
+  const mensajeComplejo =
+    `⚽ *NUEVA RESERVA - ${APP_CONFIG.nombreComplejo.toUpperCase()}*\n` +
+    `🎫 *Código:* ${codigoCompleto}\n` +
+    `📆 *Fecha:* ${fechaFormateada}\n` +
+    `⏰ *Horario:* ${horarioTexto}\n` +
+    `🏆 *Actividad:* ${deporte}\n` +
+    `🏟️ *Cancha:* ${cancha}${lineaValor}\n` +
+    `👤 *A nombre de:* ${nombre}\n` +
+    `📞 *Tel:* ${telefono}${extrasCumple}\n\n` +
+    `_Envío este comprobante para confirmar mi lugar._`;
 
-  const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
-
-  const statusTitle = savedInSheet
-    ? '¡Turno reservado en agenda!'
-    : 'Sin conexión con la agenda automática';
-
-  const statusNote = savedInSheet
-    ? 'Tu turno ya quedó agendado. Guardá tu código para recepción y compartí los datos del partido con tu grupo:'
-    : 'No pudimos conectar con la agenda automática, pero podés compartir los datos del partido con tu grupo:';
+  const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
 
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
   statusBox.innerHTML = `
     <div class="ticket-header">
-      <span class="confirm-badge">CÓDIGO #${refCode}</span>
-      <button type="button" class="btn-copy-code" onclick="copiarCodigoReserva('#${refCode}', this)">
+      <span class="confirm-badge">CÓDIGO ${codigoCompleto}</span>
+      <button type="button" class="btn-copy-code" onclick="copiarCodigoReserva('${codigoCompleto}', this)">
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
         Copiar código
       </button>
     </div>
-    <h4>${statusTitle}</h4>
-    <p>${statusNote}</p>
+    <h4>${savedInSheet ? '¡Turno reservado en agenda!' : 'Redirigiendo a WhatsApp...'}</h4>
+    <p>Te redirigimos a WhatsApp para enviar el comprobante al complejo. Guardá tu código para presentarlo en recepción:</p>
 
     <div class="ticket-grid">
       <div class="ticket-cell">
@@ -461,9 +523,9 @@ async function handleReservationSubmit(e) {
       </div>
     </div>
 
-    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
-      Compartir partido con el grupo
+    <a href="${waUrl}" class="btn-whatsapp-confirm">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg>
+      Enviar comprobante al complejo
     </a>
     <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
       Hacer otra reserva
@@ -471,6 +533,9 @@ async function handleReservationSubmit(e) {
   `;
 
   await fetchOccupiedSlots(fecha, true);
+
+  // Redirige directamente a WhatsApp para enviar el comprobante al complejo
+  window.location.href = waUrl;
 }
 
 function resetReservationFormUI() {
@@ -499,6 +564,9 @@ function initScrollReveal() {
     });
   }, { threshold: 0.1 });
 
+  reveals.forEach(el => observer.observe(el));
+}
+
 // 10. Marcar enlace activo en la barra superior según la sección visible
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
@@ -516,7 +584,4 @@ function initScrollSpy() {
   }, { rootMargin: '-35% 0px -55% 0px' });
 
   sections.forEach(sec => observer.observe(sec));
-}
-
-  reveals.forEach(el => observer.observe(el));
 }
