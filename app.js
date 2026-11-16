@@ -380,6 +380,7 @@ window.copiarDireccion = function(btn) {
 };
 
 // 7. Envío atómico del formulario, tarjeta con código y redirección directa a WhatsApp del complejo
+// 7. Envío atómico del formulario, tarjeta con botón de grupo y redirección al complejo
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -478,6 +479,7 @@ async function handleReservationSubmit(e) {
     ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
     : '';
 
+  // Mensaje directo para el WhatsApp del complejo
   const mensajeComplejo =
     `⚽ *NUEVA RESERVA - ${APP_CONFIG.nombreComplejo.toUpperCase()}*\n` +
     `🎫 *Código:* ${codigoCompleto}\n` +
@@ -489,7 +491,16 @@ async function handleReservationSubmit(e) {
     `📞 *Tel:* ${telefono}${extrasCumple}\n\n` +
     `_Envío este comprobante para confirmar mi lugar._`;
 
+  // Mensaje para compartir con el grupo de jugadores
+  const mensajeGrupo =
+    `⚽ *¡Tenemos cancha en ${APP_CONFIG.nombreComplejo}!*\n` +
+    `📆 ${fechaFormateada} · ⏰ ${horarioTexto}\n` +
+    `🏟️ ${cancha} (${deporte})${lineaValor}\n` +
+    `📍 ${APP_CONFIG.direccion}\n` +
+    `🎫 Código de ingreso: *${codigoCompleto}*`;
+
   const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
+  const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
 
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
@@ -502,7 +513,7 @@ async function handleReservationSubmit(e) {
       </button>
     </div>
     <h4>${savedInSheet ? '¡Turno reservado en agenda!' : 'Redirigiendo a WhatsApp...'}</h4>
-    <p>Te redirigimos a WhatsApp para enviar el comprobante al complejo. Guardá tu código para presentarlo en recepción:</p>
+    <p>Tu turno ya quedó agendado. Guardá tu código para recepción y compartí los datos del partido con tu grupo:</p>
 
     <div class="ticket-grid">
       <div class="ticket-cell">
@@ -523,9 +534,9 @@ async function handleReservationSubmit(e) {
       </div>
     </div>
 
-    <a href="${waUrl}" class="btn-whatsapp-confirm">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg>
-      Enviar comprobante al complejo
+    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+      Compartir partido con el grupo
     </a>
     <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
       Hacer otra reserva
@@ -534,7 +545,7 @@ async function handleReservationSubmit(e) {
 
   await fetchOccupiedSlots(fecha, true);
 
-  // Redirige directamente a WhatsApp para enviar el comprobante al complejo
+  // Redirige automáticamente a WhatsApp con el comprobante para el complejo
   window.location.href = waUrl;
 }
 
