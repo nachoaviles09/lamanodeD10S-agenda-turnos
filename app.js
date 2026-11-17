@@ -1,5 +1,6 @@
 const APP_CONFIG = window.APP_CONFIG || CONFIG;
 const SCRIPT_URL = APP_CONFIG.scriptURL;
+const STORAGE_LAST_TICKET_KEY = 'lmd_last_reservation_ticket';
 
 let occupiedByDate = {};
 
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   configurarBotonFlotante();
   initScrollReveal();
   initScrollSpy();
+  restaurarUltimoComprobante();
 
   const fechaInput = document.getElementById('fecha');
   const deporteSelect = document.getElementById('deporte');
@@ -379,8 +381,105 @@ window.copiarDireccion = function(btn) {
   }
 };
 
-// 7. Envío atómico del formulario, tarjeta con código y redirección directa a WhatsApp del complejo
-// 7. Envío atómico del formulario, tarjeta con botón de grupo y redirección al complejo
+// Renderiza el comprobante digital (usado tanto tras reservar como al recuperar desde localStorage)
+function renderTicketHTML(ticketData, esRecuperado = false) {
+  const {
+    codigoCompleto,
+    fechaFormateada,
+    horarioTexto,
+    cancha,
+    precioTurno,
+    savedInSheet,
+    waUrl,
+    waShareUrl
+  } = ticketData;
+
+  const titulo = esRecuperado
+    ? 'Ya tenés una reserva activa registrada'
+    : (savedInSheet ? '¡Turno reservado en agenda!' : '¡Comprobante generado!');
+
+  const bajada = esRecuperado
+    ? 'Recuperamos tu último turno guardado en este dispositivo para evitar reservas duplicadas. Si no se abrió WhatsApp, usá el botón verde:'
+    : 'Tu turno ya quedó agendado. Si WhatsApp no se abrió automáticamente, presioná el botón verde para enviar el comprobante al complejo:';
+
+  return `
+    <div class="ticket-header">
+      <span class="confirm-badge">CÓDIGO ${codigoCompleto}</span>
+      <button type="button" class="btn-copy-code" onclick="copiarCodigoReserva('${codigoCompleto}', this)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        Copiar código
+      </button>
+    </div>
+    <h4>${titulo}</h4>
+    <p>${bajada}</p>
+
+    <div class="ticket-grid">
+      <div class="ticket-cell">
+        <span class="ticket-label">Fecha</span>
+        <span class="ticket-value">${fechaFormateada}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Horario</span>
+        <span class="ticket-value">${horarioTexto}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Cancha</span>
+        <span class="ticket-value">${cancha}</span>
+      </div>
+      <div class="ticket-cell">
+        <span class="ticket-label">Valor estimado</span>
+        <span class="ticket-value">${precioTurno}</span>
+      </div>
+    </div>
+
+    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
+      Enviar comprobante por WhatsApp
+    </a>
+
+    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-group">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+      Compartir partido con el grupo
+    </a>
+
+    <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
+      Hacer otra reserva
+    </button>
+  `;
+}
+
+// Recupera el último ticket si el jugador recarga por error o latencia 4G (expira a las 12 hs o si el turno ya pasó)
+function restaurarUltimoComprobante() {
+  try {
+    const raw = localStorage.getItem(STORAGE_LAST_TICKET_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.fecha || !saved.createdAt) return;
+
+    const ahora = new Date();
+    const yyyy = ahora.getFullYear();
+    const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    const dd = String(ahora.getDate()).padStart(2, '0');
+    const hoyStr = `${yyyy}-${mm}-${dd}`;
+
+    const doceHorasMs = 12 * 60 * 60 * 1000;
+    if (saved.fecha < hoyStr || (Date.now() - saved.createdAt) > doceHorasMs) {
+      localStorage.removeItem(STORAGE_LAST_TICKET_KEY);
+      return;
+    }
+
+    const statusBox = document.getElementById('statusBox');
+    if (statusBox) {
+      statusBox.style.display = 'block';
+      statusBox.className = 'status-box success';
+      statusBox.innerHTML = renderTicketHTML(saved, true);
+    }
+  } catch (err) {
+    console.warn('No se pudo leer el último comprobante guardado:', err);
+  }
+}
+
+// 7. Envío atómico del formulario, validación de teléfono, guardado en localStorage y WhatsApp
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -394,11 +493,29 @@ async function handleReservationSubmit(e) {
   const cancha = document.getElementById('cancha').value;
   const horarioRaw = document.getElementById('horario').value;
   const nombreInput = document.getElementById('nombre');
+  const telefonoInput = document.getElementById('telefono');
+
   const nombre = formatearNombrePropio(nombreInput.value.trim());
   nombreInput.value = nombre;
-  const telefono = document.getElementById('telefono').value.replace(/[^\d+]/g, '').trim();
 
-  if (!fecha || !deporte || !cancha || !horarioRaw || !nombre || !telefono) return;
+  // 1) Validación estricta de teléfono: limpia espacios/guiones/paréntesis y exige al menos 8 dígitos
+  const telefono = telefonoInput.value.replace(/[^\d+]/g, '').trim();
+  const soloDigitos = telefono.replace(/\D/g, '');
+  telefonoInput.value = telefono;
+
+  if (!fecha || !deporte || !cancha || !horarioRaw || !nombre) return;
+
+  if (soloDigitos.length < 8) {
+    statusBox.style.display = 'block';
+    statusBox.className = 'status-box warning';
+    statusBox.innerHTML = `
+      <span class="confirm-badge">TELÉFONO INCOMPLETO</span>
+      <h4>Revisá tu número de teléfono</h4>
+      <p>Ingresá un número válido de al menos 8 dígitos (con código de área, por ejemplo: <strong>3434717233</strong>).</p>
+    `;
+    telefonoInput.focus();
+    return;
+  }
 
   btnSubmit.disabled = true;
   btnText.textContent = 'Agendando turno...';
@@ -433,7 +550,8 @@ async function handleReservationSubmit(e) {
           action: 'reservar',
           code: codigoCompleto,
           fecha,
-          horario: slotsAGuardar[0],
+          horario: horarioTexto,
+          horarioEtiqueta: horarioTexto,
           slots: slotsAGuardar,
           deporte,
           cancha,
@@ -502,59 +620,48 @@ async function handleReservationSubmit(e) {
   const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
   const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
 
+  const ticketData = {
+    codigoCompleto,
+    fecha,
+    fechaFormateada,
+    horarioTexto,
+    cancha,
+    precioTurno,
+    savedInSheet,
+    waUrl,
+    waShareUrl,
+    createdAt: Date.now()
+  };
+
+  // 2) Guardar último comprobante en localStorage para evitar duplicados si recarga la página
+  try {
+    localStorage.setItem(STORAGE_LAST_TICKET_KEY, JSON.stringify(ticketData));
+  } catch (err) {
+    console.warn('No se pudo guardar en localStorage:', err);
+  }
+
+  // 3) Mostrar tarjeta con botón manual "Enviar comprobante por WhatsApp" + "Compartir partido con el grupo"
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
-  statusBox.innerHTML = `
-    <div class="ticket-header">
-      <span class="confirm-badge">CÓDIGO ${codigoCompleto}</span>
-      <button type="button" class="btn-copy-code" onclick="copiarCodigoReserva('${codigoCompleto}', this)">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-        Copiar código
-      </button>
-    </div>
-    <h4>${savedInSheet ? '¡Turno reservado en agenda!' : 'Redirigiendo a WhatsApp...'}</h4>
-    <p>Tu turno ya quedó agendado. Guardá tu código para recepción y compartí los datos del partido con tu grupo:</p>
-
-    <div class="ticket-grid">
-      <div class="ticket-cell">
-        <span class="ticket-label">Fecha</span>
-        <span class="ticket-value">${fechaFormateada}</span>
-      </div>
-      <div class="ticket-cell">
-        <span class="ticket-label">Horario</span>
-        <span class="ticket-value">${horarioTexto}</span>
-      </div>
-      <div class="ticket-cell">
-        <span class="ticket-label">Cancha</span>
-        <span class="ticket-value">${cancha}</span>
-      </div>
-      <div class="ticket-cell">
-        <span class="ticket-label">Valor estimado</span>
-        <span class="ticket-value">${precioTurno}</span>
-      </div>
-    </div>
-
-    <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
-      Compartir partido con el grupo
-    </a>
-    <button type="button" onclick="resetReservationFormUI()" style="margin-top: 14px; background: transparent; border: none; color: #94a3b8; font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
-      Hacer otra reserva
-    </button>
-  `;
+  statusBox.innerHTML = renderTicketHTML(ticketData, false);
 
   await fetchOccupiedSlots(fecha, true);
 
-  // Redirige automáticamente a WhatsApp con el comprobante para el complejo
-  window.location.href = waUrl;
+  // Intenta abrir WhatsApp automáticamente (si el navegador interno de Instagram lo frena, queda el botón manual visible)
+  setTimeout(() => {
+    window.location.href = waUrl;
+  }, 350);
 }
 
-function resetReservationFormUI() {
+window.resetReservationFormUI = function() {
+  try {
+    localStorage.removeItem(STORAGE_LAST_TICKET_KEY);
+  } catch (err) {}
   document.getElementById('reservationForm').reset();
   document.getElementById('statusBox').style.display = 'none';
   initDateLimit();
   syncSportsRules();
-}
+};
 
 // 8. Botón flotante de WhatsApp
 function configurarBotonFlotante() {
