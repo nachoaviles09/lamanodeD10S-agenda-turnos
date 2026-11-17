@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=42">
+  <link rel="stylesheet" href="styles.css?v=43">
 </head>
 <body>
 
@@ -74,6 +74,84 @@
       </div>
 
       <div class="grid-reservation">
+        <!-- MAPA INTERACTIVO DE CANCHAS DEL PREDIO -->
+        <div class="pitch-blueprint glass-effect reveal" id="pitchBlueprint">
+          <div class="pitch-blueprint-header">
+            <div>
+              <span class="sport-badge" style="margin-bottom: 4px;">Vista táctica del predio</span>
+              <h4>Tocá una cancha para elegirla</h4>
+            </div>
+            <div class="pitch-legend">
+              <span><i class="dot-free"></i> Libre</span>
+              <span><i class="dot-selected"></i> Elegida</span>
+              <span><i class="dot-busy"></i> Completa</span>
+            </div>
+          </div>
+
+          <div class="pitch-complex-grid">
+            <!-- 4 Canchas Fútbol 5 -->
+            <button type="button" class="pitch-unit" data-cancha="Cancha 1 (Fútbol 5)" data-tipo="Fútbol 5">
+              <div class="pitch-markings">
+                <span class="pitch-center-circle"></span>
+                <span class="pitch-half-line"></span>
+              </div>
+              <div class="pitch-label">
+                <strong>Cancha 1</strong>
+                <small>Fútbol 5 · LED</small>
+              </div>
+              <span class="pitch-status-tag">Disponible</span>
+            </button>
+
+            <button type="button" class="pitch-unit" data-cancha="Cancha 2 (Fútbol 5)" data-tipo="Fútbol 5">
+              <div class="pitch-markings">
+                <span class="pitch-center-circle"></span>
+                <span class="pitch-half-line"></span>
+              </div>
+              <div class="pitch-label">
+                <strong>Cancha 2</strong>
+                <small>Fútbol 5 · LED</small>
+              </div>
+              <span class="pitch-status-tag">Disponible</span>
+            </button>
+
+            <button type="button" class="pitch-unit" data-cancha="Cancha 3 (Fútbol 5)" data-tipo="Fútbol 5">
+              <div class="pitch-markings">
+                <span class="pitch-center-circle"></span>
+                <span class="pitch-half-line"></span>
+              </div>
+              <div class="pitch-label">
+                <strong>Cancha 3</strong>
+                <small>Fútbol 5 · LED</small>
+              </div>
+              <span class="pitch-status-tag">Disponible</span>
+            </button>
+
+            <button type="button" class="pitch-unit" data-cancha="Cancha 4 (Fútbol 5)" data-tipo="Fútbol 5">
+              <div class="pitch-markings">
+                <span class="pitch-center-circle"></span>
+                <span class="pitch-half-line"></span>
+              </div>
+              <div class="pitch-label">
+                <strong>Cancha 4</strong>
+                <small>Fútbol 5 . LED</small>
+              </div>
+              <span class="pitch-status-tag">Disponible</span>
+            </button>
+
+            <!-- Cancha 5 Fútbol 7 (ancho completo abajo) -->
+            <button type="button" class="pitch-unit pitch-f7" data-cancha="Cancha 5 (Fútbol 7)" data-tipo="Fútbol 7">
+              <div class="pitch-markings">
+                <span class="pitch-center-circle"></span>
+                <span class="pitch-half-line"></span>
+              </div>
+              <div class="pitch-label">
+                <strong>Cancha 5 · Reglamentaria</strong>
+                <small>Fútbol 7 · Césped Sintético</small>
+              </div>
+              <span class="pitch-status-tag">Disponible</span>
+            </button>
+          </div>
+        </div>
         <div class="form-container glass-effect reveal delay-1">
           <form id="reservationForm">
             <div class="form-group-row">
@@ -270,6 +348,6 @@
   </footer>
 
   <script src="config.js?v=8"></script>
-  <script src="app.js?v=43"></script>
+  <script src="app.js?v=44"></script>
 </body>
 </html>

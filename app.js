@@ -315,6 +315,8 @@ function actualizarBadgeDisponibilidad(fecha) {
     badge.className = 'live-slots-pill full';
     badge.innerHTML = `<span class="live-dot"></span> Agenda completa para esta fecha`;
   }
+
+  syncPitchBlueprintUI();
 }
 
 // Utilidades de formato y copiado al portapapeles
@@ -702,4 +704,110 @@ function initScrollSpy() {
   }, { rootMargin: '-35% 0px -55% 0px' });
 
   sections.forEach(sec => observer.observe(sec));
+}
+
+// =========================================================
+// INTERACCIÓN DE CANCHA TÁCTICA Y SPOTLIGHT DE ESTADIO
+// =========================================================
+document.addEventListener('DOMContentLoaded', () => {
+  initInteractivePitches();
+  initStadiumSpotlight();
+});
+
+function initInteractivePitches() {
+  const blueprint = document.getElementById('pitchBlueprint');
+  if (!blueprint) return;
+
+  const pitchButtons = blueprint.querySelectorAll('.pitch-unit');
+  const deporteSelect = document.getElementById('deporte');
+  const canchaSelect = document.getElementById('cancha');
+  const horarioSelect = document.getElementById('horario');
+
+  pitchButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const canchaNombre = btn.dataset.cancha;
+      const tipoDeporte = btn.dataset.tipo;
+
+      // Si no eligió actividad o eligió una incompatible, la ajusta sola
+      const deporteActual = deporteSelect.value;
+      const esCumple = deporteActual.includes('Cumpleaños');
+
+      if (tipoDeporte === 'Fútbol 7' && deporteActual !== 'Fútbol 7') {
+        deporteSelect.value = 'Fútbol 7';
+        syncSportsRules();
+      } else if (tipoDeporte === 'Fútbol 5' && (!deporteActual || deporteActual === 'Fútbol 7')) {
+        deporteSelect.value = 'Fútbol 5';
+        syncSportsRules();
+      } else if (esCumple && tipoDeporte === 'Fútbol 5') {
+        // Mantiene Cumpleaños pero permite elegir la cancha F5 tocada
+      }
+
+      canchaSelect.value = canchaNombre;
+      actualizarHorariosDisponibles();
+      syncPitchBlueprintUI();
+
+      // Enfoca directo el selector de horario para reservar en 1 toque
+      if (horarioSelect && !horarioSelect.disabled) {
+        horarioSelect.focus();
+      }
+    });
+  });
+
+  if (canchaSelect) {
+    canchaSelect.addEventListener('change', syncPitchBlueprintUI);
+  }
+  if (deporteSelect) {
+    deporteSelect.addEventListener('change', syncPitchBlueprintUI);
+  }
+  const fechaInput = document.getElementById('fecha');
+  if (fechaInput) {
+    fechaInput.addEventListener('change', () => setTimeout(syncPitchBlueprintUI, 350));
+  }
+}
+
+function syncPitchBlueprintUI() {
+  const blueprint = document.getElementById('pitchBlueprint');
+  if (!blueprint) return;
+
+  const fecha = document.getElementById('fecha')?.value;
+  const canchaElegida = document.getElementById('cancha')?.value;
+  const ocupadosFecha = (fecha && occupiedByDate[fecha]) || {};
+  const totalSlots = (APP_CONFIG.horarios || []).length;
+
+  blueprint.querySelectorAll('.pitch-unit').forEach(btn => {
+    const nombre = btn.dataset.cancha;
+    const tag = btn.querySelector('.pitch-status-tag');
+    const ocupados = ocupadosFecha[nombre] || [];
+
+    let libres = 0;
+    (APP_CONFIG.horarios || []).forEach(slot => {
+      if (!ocupados.includes(slot) && (!fecha || !esHorarioPasado(fecha, slot))) {
+        libres++;
+      }
+    });
+
+    btn.classList.toggle('selected', canchaElegida === nombre);
+    btn.classList.toggle('busy', totalSlots > 0 && libres === 0);
+
+    if (tag) {
+      if (canchaElegida === nombre) {
+        tag.textContent = `Seleccionada · ${libres} libres`;
+      } else if (libres === 0) {
+        tag.textContent = 'Completa hoy';
+      } else {
+        tag.textContent = `${libres} ${libres === 1 ? 'turno libre' : 'turnos libres'}`;
+      }
+    }
+  });
+}
+
+function initStadiumSpotlight() {
+  const blueprint = document.getElementById('pitchBlueprint');
+  if (!blueprint) return;
+
+  blueprint.addEventListener('mousemove', (e) => {
+    const rect = blueprint.getBoundingClientRect();
+    blueprint.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    blueprint.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  });
 }
