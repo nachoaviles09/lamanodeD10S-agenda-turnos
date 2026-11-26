@@ -12,11 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initScrollSpy();
   restaurarUltimoComprobante();
+  initInputSanitizers();
 
   const fechaInput = document.getElementById('fecha');
   const deporteSelect = document.getElementById('deporte');
   const canchaSelect = document.getElementById('cancha');
   const form = document.getElementById('reservationForm');
+  syncSenaCumpleBox();
 
   fechaInput.addEventListener('change', async () => {
     await fetchOccupiedSlots(fechaInput.value, false);
@@ -24,11 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   deporteSelect.addEventListener('change', () => {
+    const horarioSelect = document.getElementById('horario');
+    if (horarioSelect) horarioSelect.value = '';
     syncSportsRules();
+    syncSenaCumpleBox();
     actualizarHorariosDisponibles();
   });
 
   canchaSelect.addEventListener('change', () => {
+    const horarioSelect = document.getElementById('horario');
+    if (horarioSelect) horarioSelect.value = '';
     actualizarHorariosDisponibles();
   });
 
@@ -41,6 +48,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', handleReservationSubmit);
 });
+
+function syncSenaCumpleBox() {
+  const deporteSelect = document.getElementById('deporte');
+  const senaCumpleBox = document.getElementById('senaCumpleBox');
+  const checkbox = document.getElementById('confirmacionSenaCumple');
+  const resumen = document.getElementById('senaCumpleResumen');
+  const porcentaje = document.getElementById('senaCumplePorcentaje');
+  const datosTransferencia = document.getElementById('datosTransferenciaSena');
+
+  if (!deporteSelect || !senaCumpleBox || !checkbox) return;
+
+  const esCumple = deporteSelect.value.toLowerCase().includes('cumple');
+  senaCumpleBox.style.display = esCumple ? 'block' : 'none';
+  checkbox.required = esCumple;
+
+  if (!esCumple) checkbox.checked = false;
+  if (resumen) resumen.textContent = `${APP_CONFIG.senaCumplePorcentaje}% · ${APP_CONFIG.senaCumpleMonto}`;
+  if (porcentaje) porcentaje.textContent = `${APP_CONFIG.senaCumplePorcentaje}%`;
+  if (datosTransferencia) datosTransferencia.textContent = APP_CONFIG.datosTransferenciaSena;
+}
+
+function initInputSanitizers() {
+  const nombreInput = document.getElementById('nombre');
+  const telefonoInput = document.getElementById('telefono');
+
+  if (nombreInput) {
+    nombreInput.addEventListener('input', () => {
+      nombreInput.value = nombreInput.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+    });
+  }
+
+  if (telefonoInput) {
+    telefonoInput.addEventListener('input', () => {
+      telefonoInput.value = telefonoInput.value.replace(/\D/g, '');
+    });
+  }
+}
 
 // 1. Navegación móvil
 function initHeaderAndNav() {
@@ -135,14 +179,14 @@ function syncSportsRules() {
       if (canchasF5.includes('Cancha 4 (Fútbol 5)')) {
         canchaSelect.value = 'Cancha 4 (Fútbol 5)';
       }
-      horarioNote.textContent = `${textoTarifa}Incluye parrillas, freezer, heladeras, mesas, sillas y tablones.`;
+      horarioNote.textContent = `${textoTarifa}Incluye parrillas, freezer, heladeras, mesas, sillas y tablones. Requiere seña del ${APP_CONFIG.senaCumplePorcentaje}% (${APP_CONFIG.senaCumpleMonto}) para agendar.`;
     } else {
       horarioNote.textContent = `${textoTarifa}Los horarios ocupados se bloquean automáticamente.`;
     }
   }
 }
 
-// 5. Consultar turnos ocupados al servidor (Google Apps Script)
+// 5. Consultar turnos ocupados al servidor (sin caché)
 async function fetchOccupiedSlots(fecha, silent = false) {
   if (!fecha) return;
 
@@ -167,7 +211,7 @@ async function fetchOccupiedSlots(fecha, silent = false) {
   }
 
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=getOccupied&fecha=${encodeURIComponent(fecha)}`);
+    const res = await fetch(`${SCRIPT_URL}?action=getOccupied&fecha=${encodeURIComponent(fecha)}&_t=${Date.now()}`);
     const data = await res.json();
     if (data && data.occupied) {
       occupiedByDate[fecha] = data.occupied;
@@ -285,7 +329,6 @@ function actualizarHorariosDisponibles() {
   }
 }
 
-// Actualiza el indicador en vivo de turnos disponibles para la fecha elegida
 function actualizarBadgeDisponibilidad(fecha) {
   const badge = document.getElementById('liveAvailabilityBadge');
   if (!badge || !fecha) return;
@@ -319,7 +362,6 @@ function actualizarBadgeDisponibilidad(fecha) {
   syncPitchBlueprintUI();
 }
 
-// Utilidades de formato y copiado al portapapeles
 function formatearNombrePropio(texto) {
   return texto
     .toLowerCase()
@@ -383,7 +425,6 @@ window.copiarDireccion = function(btn) {
   }
 };
 
-// Renderiza el comprobante digital (usado tanto tras reservar como al recuperar desde localStorage)
 function renderTicketHTML(ticketData, esRecuperado = false) {
   const {
     codigoCompleto,
@@ -392,17 +433,28 @@ function renderTicketHTML(ticketData, esRecuperado = false) {
     cancha,
     precioTurno,
     savedInSheet,
+    esCumple,
     waUrl,
     waShareUrl
   } = ticketData;
 
   const titulo = esRecuperado
-    ? 'Ya tenés una reserva activa registrada'
-    : (savedInSheet ? '¡Turno reservado en agenda!' : '¡Comprobante generado!');
+    ? (esCumple ? 'Tenés una solicitud de cumpleaños registrada' : 'Ya tenés una reserva activa registrada')
+    : (esCumple
+        ? '¡Solicitud enviada! Enviá la seña por WhatsApp'
+        : (savedInSheet ? '¡Turno reservado en agenda!' : '¡Comprobante generado!'));
 
   const bajada = esRecuperado
-    ? 'Recuperamos tu último turno guardado en este dispositivo para evitar reservas duplicadas. Si no se abrió WhatsApp, usá el botón verde:'
-    : 'Tu turno ya quedó agendado. Si WhatsApp no se abrió automáticamente, presioná el botón verde para enviar el comprobante al complejo:';
+    ? (esCumple
+        ? `Recuperamos tu solicitud de cumpleaños (${APP_CONFIG.senaCumplePorcentaje}% · ${APP_CONFIG.senaCumpleMonto}). Recepción agendará el turno al aceptar tu seña por WhatsApp:`
+        : 'Recuperamos tu último turno guardado en este dispositivo para evitar reservas duplicadas. Si no se abrió WhatsApp, usá el botón verde:')
+    : (esCumple
+        ? `Enviá el comprobante de seña (${APP_CONFIG.senaCumplePorcentaje}% · ${APP_CONFIG.senaCumpleMonto}) por WhatsApp. El turno quedará agendado en la planilla cuando recepción acepte la seña:`
+        : 'Tu turno ya quedó agendado. Si WhatsApp no se abrió automáticamente, presioná el botón verde para enviar el comprobante al complejo:');
+
+  const textoBotonWa = esCumple
+    ? 'Enviar comprobante de seña por WhatsApp'
+    : 'Enviar comprobante por WhatsApp';
 
   return `
     <div class="ticket-header">
@@ -429,14 +481,14 @@ function renderTicketHTML(ticketData, esRecuperado = false) {
         <span class="ticket-value">${cancha}</span>
       </div>
       <div class="ticket-cell">
-        <span class="ticket-label">Valor estimado</span>
-        <span class="ticket-value">${precioTurno}</span>
+        <span class="ticket-label">${esCumple ? 'Seña (10%)' : 'Valor estimado'}</span>
+        <span class="ticket-value">${esCumple ? APP_CONFIG.senaCumpleMonto : precioTurno}</span>
       </div>
     </div>
 
     <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-confirm">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
-      Enviar comprobante por WhatsApp
+      ${textoBotonWa}
     </a>
 
     <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-group">
@@ -450,7 +502,6 @@ function renderTicketHTML(ticketData, esRecuperado = false) {
   `;
 }
 
-// Recupera el último ticket si el jugador recarga por error o latencia 4G (expira a las 12 hs o si el turno ya pasó)
 function restaurarUltimoComprobante() {
   try {
     const raw = localStorage.getItem(STORAGE_LAST_TICKET_KEY);
@@ -481,7 +532,7 @@ function restaurarUltimoComprobante() {
   }
 }
 
-// 7. Envío atómico del formulario, validación de teléfono, guardado en localStorage y WhatsApp
+// 7. Envío atómico del formulario y limpieza limpia de inputs
 async function handleReservationSubmit(e) {
   e.preventDefault();
 
@@ -492,22 +543,38 @@ async function handleReservationSubmit(e) {
 
   const fecha = document.getElementById('fecha').value;
   const deporte = document.getElementById('deporte').value;
+  const esCumple = deporte.toLowerCase().includes('cumple');
   const cancha = document.getElementById('cancha').value;
   const horarioRaw = document.getElementById('horario').value;
   const nombreInput = document.getElementById('nombre');
   const telefonoInput = document.getElementById('telefono');
+  const senaCumpleCheckbox = document.getElementById('confirmacionSenaCumple');
 
-  const nombre = formatearNombrePropio(nombreInput.value.trim());
+  const nombreLimpio = nombreInput.value
+    .replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const nombre = formatearNombrePropio(nombreLimpio);
   nombreInput.value = nombre;
 
-  // 1) Validación estricta de teléfono: limpia espacios/guiones/paréntesis y exige al menos 8 dígitos
-  const telefono = telefonoInput.value.replace(/[^\d+]/g, '').trim();
-  const soloDigitos = telefono.replace(/\D/g, '');
+  const telefono = telefonoInput.value.replace(/\D/g, '');
   telefonoInput.value = telefono;
 
-  if (!fecha || !deporte || !cancha || !horarioRaw || !nombre) return;
+  if (!fecha || !deporte || !cancha || !horarioRaw) return;
 
-  if (soloDigitos.length < 8) {
+  if (nombre.length < 2) {
+    statusBox.style.display = 'block';
+    statusBox.className = 'status-box warning';
+    statusBox.innerHTML = `
+      <span class="confirm-badge">NOMBRE INVÁLIDO</span>
+      <h4>Revisá el nombre ingresado</h4>
+      <p>Ingresá tu nombre y apellido usando únicamente letras.</p>
+    `;
+    nombreInput.focus();
+    return;
+  }
+
+  if (telefono.length < 8) {
     statusBox.style.display = 'block';
     statusBox.className = 'status-box warning';
     statusBox.innerHTML = `
@@ -519,11 +586,22 @@ async function handleReservationSubmit(e) {
     return;
   }
 
+  if (esCumple && (!senaCumpleCheckbox || !senaCumpleCheckbox.checked)) {
+    statusBox.style.display = 'block';
+    statusBox.className = 'status-box warning';
+    statusBox.innerHTML = `
+      <span class="confirm-badge">CONFIRMÁ LA SEÑA</span>
+      <h4>Falta confirmar el comprobante de seña</h4>
+      <p>Marcá la casilla de confirmación para continuar con la solicitud de cumpleaños.</p>
+    `;
+    senaCumpleCheckbox?.focus();
+    return;
+  }
+
   btnSubmit.disabled = true;
-  btnText.textContent = 'Agendando turno...';
+  btnText.textContent = esCumple ? 'Registrando solicitud...' : 'Agendando turno...';
   if (loader) loader.style.display = 'inline-block';
 
-  const esCumple = deporte.includes('Cumpleaños');
   let slotsAGuardar = [];
   let horarioTexto = horarioRaw;
 
@@ -538,7 +616,7 @@ async function handleReservationSubmit(e) {
   const prefijo = APP_CONFIG.prefijoCodigo || 'LMD';
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const refCode = `${prefijo}-${randomNum}`;
-  const codigoCompleto = `#${refCode}`;
+  let codigoCompleto = `#${refCode}`;
 
   let savedInSheet = false;
   let conflictDetected = false;
@@ -568,6 +646,9 @@ async function handleReservationSubmit(e) {
         conflictMessage = result.message || 'Ese horario se acaba de ocupar. Elegí otro turno disponible.';
       } else if (result.status === 'ok' || result.result === 'success') {
         savedInSheet = true;
+        if (result.code) {
+          codigoCompleto = result.code;
+        }
       }
     } catch (err) {
       console.error('Error guardando reserva:', err);
@@ -596,12 +677,15 @@ async function handleReservationSubmit(e) {
   const precioTurno = (APP_CONFIG.precios && APP_CONFIG.precios[deporte]) || 'A confirmar';
   const lineaValor = precioTurno !== 'A confirmar' ? `\n💰 *Valor:* ${precioTurno}` : '';
   const extrasCumple = esCumple
-    ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.`
+    ? `\n🎂 *Incluye:* 3 hs de cancha + freezer, heladeras, parrillas, mesas, sillas y tablones.\n💳 *Seña (${APP_CONFIG.senaCumplePorcentaje}%):* ${APP_CONFIG.senaCumpleMonto} (a validar por recepción para agendar)`
     : '';
 
-  // Mensaje directo para el WhatsApp del complejo
+  const cierreMensaje = esCumple
+    ? `_Envío comprobante de seña para que recepción acepte y agende el turno._`
+    : `_Envío este comprobante para confirmar mi lugar._`;
+
   const mensajeComplejo =
-    `⚽ *NUEVA RESERVA - ${APP_CONFIG.nombreComplejo.toUpperCase()}*\n` +
+    `⚽ *${esCumple ? 'SOLICITUD CUMPLEAÑOS' : 'NUEVA RESERVA'} - ${APP_CONFIG.nombreComplejo.toUpperCase()}*\n` +
     `🎫 *Código:* ${codigoCompleto}\n` +
     `📆 *Fecha:* ${fechaFormateada}\n` +
     `⏰ *Horario:* ${horarioTexto}\n` +
@@ -609,15 +693,13 @@ async function handleReservationSubmit(e) {
     `🏟️ *Cancha:* ${cancha}${lineaValor}\n` +
     `👤 *A nombre de:* ${nombre}\n` +
     `📞 *Tel:* ${telefono}${extrasCumple}\n\n` +
-    `_Envío este comprobante para confirmar mi lugar._`;
+    cierreMensaje;
 
-  // Mensaje para compartir con el grupo de jugadores
   const mensajeGrupo =
     `⚽ *¡Tenemos cancha en ${APP_CONFIG.nombreComplejo}!*\n` +
     `📆 ${fechaFormateada} · ⏰ ${horarioTexto}\n` +
     `🏟️ ${cancha} (${deporte})${lineaValor}\n` +
-    `📍 ${APP_CONFIG.direccion}\n` +
-    `🎫 Código de ingreso: *${codigoCompleto}*`;
+    `📍 ${APP_CONFIG.direccion}`;
 
   const waUrl = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(mensajeComplejo)}`;
   const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeGrupo)}`;
@@ -630,26 +712,30 @@ async function handleReservationSubmit(e) {
     cancha,
     precioTurno,
     savedInSheet,
+    esCumple,
     waUrl,
     waShareUrl,
     createdAt: Date.now()
   };
 
-  // 2) Guardar último comprobante en localStorage para evitar duplicados si recarga la página
   try {
     localStorage.setItem(STORAGE_LAST_TICKET_KEY, JSON.stringify(ticketData));
   } catch (err) {
     console.warn('No se pudo guardar en localStorage:', err);
   }
 
-  // 3) Mostrar tarjeta con botón manual "Enviar comprobante por WhatsApp" + "Compartir partido con el grupo"
+  // Limpia los campos del formulario para que una siguiente reserva arranque limpia
+  document.getElementById('reservationForm').reset();
+  document.getElementById('fecha').value = fecha;
+  syncSportsRules();
+  syncSenaCumpleBox();
+
   statusBox.style.display = 'block';
   statusBox.className = `status-box ${savedInSheet ? 'success' : 'warning'}`;
   statusBox.innerHTML = renderTicketHTML(ticketData, false);
 
   await fetchOccupiedSlots(fecha, true);
 
-  // Intenta abrir WhatsApp automáticamente (si el navegador interno de Instagram lo frena, queda el botón manual visible)
   setTimeout(() => {
     window.location.href = waUrl;
   }, 350);
@@ -663,17 +749,16 @@ window.resetReservationFormUI = function() {
   document.getElementById('statusBox').style.display = 'none';
   initDateLimit();
   syncSportsRules();
+  syncSenaCumpleBox();
 };
 
-// 8. Botón flotante de WhatsApp
 function configurarBotonFlotante() {
   const waFloat = document.querySelector('.whatsapp-float');
   if (!waFloat) return;
-  const texto = `¡Hola! Quiero hacer una consulta en ${APP_CONFIG.nombreComplejo} ⚽`;
+  const texto = `¡Hola! ${APP_CONFIG.nombreComplejo} Quiero hacer una consulta  ⚽`;
   waFloat.href = `https://api.whatsapp.com/send?phone=${APP_CONFIG.whatsappContacto}&text=${encodeURIComponent(texto)}`;
 }
 
-// 9. Animaciones suaves al scrollear
 function initScrollReveal() {
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
@@ -687,7 +772,6 @@ function initScrollReveal() {
   reveals.forEach(el => observer.observe(el));
 }
 
-// 10. Marcar enlace activo en la barra superior según la sección visible
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
@@ -706,9 +790,6 @@ function initScrollSpy() {
   sections.forEach(sec => observer.observe(sec));
 }
 
-// =========================================================
-// INTERACCIÓN DE CANCHA TÁCTICA Y SPOTLIGHT DE ESTADIO
-// =========================================================
 document.addEventListener('DOMContentLoaded', () => {
   initInteractivePitches();
   initStadiumSpotlight();
@@ -728,25 +809,26 @@ function initInteractivePitches() {
       const canchaNombre = btn.dataset.cancha;
       const tipoDeporte = btn.dataset.tipo;
 
-      // Si no eligió actividad o eligió una incompatible, la ajusta sola
       const deporteActual = deporteSelect.value;
       const esCumple = deporteActual.includes('Cumpleaños');
 
       if (tipoDeporte === 'Fútbol 7' && deporteActual !== 'Fútbol 7') {
         deporteSelect.value = 'Fútbol 7';
         syncSportsRules();
+        syncSenaCumpleBox();
       } else if (tipoDeporte === 'Fútbol 5' && (!deporteActual || deporteActual === 'Fútbol 7')) {
         deporteSelect.value = 'Fútbol 5';
         syncSportsRules();
+        syncSenaCumpleBox();
       } else if (esCumple && tipoDeporte === 'Fútbol 5') {
-        // Mantiene Cumpleaños pero permite elegir la cancha F5 tocada
+        // Mantiene Cumpleaños y selecciona la cancha F5 tocada
       }
 
+      if (horarioSelect) horarioSelect.value = '';
       canchaSelect.value = canchaNombre;
       actualizarHorariosDisponibles();
       syncPitchBlueprintUI();
 
-      // Enfoca directo el selector de horario para reservar en 1 toque
       if (horarioSelect && !horarioSelect.disabled) {
         horarioSelect.focus();
       }

@@ -19,6 +19,10 @@ const CONFIG = {
     "Cumpleaños (3 hs · F5)": "$100.000"
   },
 
+  senaCumplePorcentaje: 10,
+  senaCumpleMonto: "$10.000",
+  datosTransferenciaSena: "Alias: lamanoded10s.parana · Titular: Complejo La Mano de Dios",
+
   notasPrecios: {
     "Fútbol 5": "la hora",
     "Fútbol 7": "la hora · Precio inauguración",

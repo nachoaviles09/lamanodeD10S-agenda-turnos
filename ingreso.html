@@ -349,6 +349,7 @@
       color: #fef3c7;
     }
 
+    .result-banner.conflict,
     .result-banner.error {
       display: block;
       background: var(--red-bg);
@@ -400,7 +401,7 @@
       font-weight: 500;
     }
 
-    /* AGENDA DEL DÍA */
+    /* AGENDA DEL DÍA Y SEÑAS PENDIENTES */
     .agenda-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -468,6 +469,10 @@
       border-left: 4px solid var(--accent);
     }
 
+    .turno-item.estado-SenaPendiente {
+      border-left: 4px solid var(--amber);
+    }
+
     .turno-main {
       display: flex;
       flex-direction: column;
@@ -491,6 +496,42 @@
       color: var(--text-muted);
     }
 
+    .turno-sena-note {
+      font-size: 0.8rem;
+      color: #fcd34d;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .turno-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-accept-turno {
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    .btn-accept-turno:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .btn-accept-turno:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .badge-estado {
       padding: 4px 12px;
       border-radius: 999px;
@@ -506,6 +547,11 @@
     .badge-Pendiente {
       background: rgba(91, 181, 240, 0.14);
       color: var(--accent);
+    }
+
+    .badge-SenaPendiente {
+      background: var(--amber-bg);
+      color: #fbbf24;
     }
 
     .empty-msg {
@@ -548,7 +594,10 @@
           <span>Control de Acceso en Recepción</span>
         </div>
       </div>
-      <button type="button" class="btn-lock" onclick="bloquearPanel()">🔒 Bloquear</button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <a href="index.html" class="btn-lock" style="text-decoration: none;">← Web</a>
+        <button type="button" class="btn-lock" onclick="bloquearPanel()">🔒 Bloquear</button>
+      </div>
     </div>
   </header>
 
@@ -587,8 +636,8 @@
       </div>
     </section>
 
-    <!-- AGENDA DE HOY -->
-    <section class="agenda-card">
+    <!-- AGENDA DE HOY (SOLO TURNOS AGENDADOS / CONFIRMADOS DEL DÍA) -->
+    <section class="agenda-card" style="margin-bottom: 20px;">
       <div class="agenda-top">
         <h3 id="agendaTitle">Agenda de Hoy</h3>
         <div class="sync-info">
@@ -601,14 +650,28 @@
         <div class="empty-msg">Cargando turnos del día...</div>
       </div>
     </section>
+
+    <!-- SOLICITUDES DE CUMPLEAÑOS CON SEÑA PENDIENTE (HOY Y PRÓXIMAS FECHAS) -->
+    <section class="agenda-card" id="senasPendientesSection">
+      <div class="agenda-top">
+        <h3>🎂 Cumpleaños con Seña Pendiente (Dar de Alta)</h3>
+        <span class="sync-info" id="senasCountLabel">0 pendientes</span>
+      </div>
+
+      <div id="senasPendientesList" class="turnos-list">
+        <div class="empty-msg">Sin solicitudes de cumpleaños pendientes de aceptar.</div>
+      </div>
+    </section>
   </main>
 
-  <script src="config.js?v=7"></script>
+  <script src="config.js?v=8"></script>
   <script>
     const APP_CONFIG = window.APP_CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : {});
     const SCRIPT_URL = APP_CONFIG.scriptURL || '';
     const PREFIJO = APP_CONFIG.prefijoCodigo || 'LMD';
     const PIN_CORRECTO = String(APP_CONFIG.pinRecepcion || '1010').trim();
+    const SENA_PORCENTAJE = APP_CONFIG.senaCumplePorcentaje || 10;
+    const SENA_MONTO = APP_CONFIG.senaCumpleMonto || '$10.000';
     const SESSION_KEY = 'lmd_recepcion_auth';
 
     let cargandoAgenda = false;
@@ -694,6 +757,53 @@
       document.getElementById('pinInput').focus();
     }
 
+    async function aceptarSenaCumple(codigo, btnEl) {
+      const resultBox = document.getElementById('checkinResult');
+
+      if (!SCRIPT_URL || SCRIPT_URL.includes('TU_GOOGLE')) {
+        resultBox.className = 'result-banner error';
+        resultBox.innerHTML = '<strong>Falta configurar scriptURL</strong><span>Pegá la URL /exec de Google Apps Script dentro de config.js.</span>';
+        return;
+      }
+
+      if (!confirm(`¿Confirmás que recibiste la seña del turno ${codigo} y querés darlo de alta en la agenda?`)) {
+        return;
+      }
+
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.textContent = 'Agendando...';
+      }
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'aceptar_sena',
+            confirmado: true,
+            code: codigo
+          })
+        });
+        const data = await res.json();
+
+        resultBox.className = `result-banner ${data.status || 'error'}`;
+        resultBox.innerHTML = `
+          <strong>${data.message}</strong>
+          ${data.details ? `<span>${data.details}</span>` : ''}
+        `;
+        resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        await cargarResumenHoy();
+      } catch (err) {
+        resultBox.className = 'result-banner error';
+        resultBox.innerHTML = '<strong>Error de conexión</strong><span>No se pudo aceptar la seña. Revisá la conexión e intentá nuevamente.</span>';
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.textContent = '✓ Aceptar turno';
+        }
+      }
+    }
+
     async function validarIngreso() {
       const input = document.getElementById('codeInput');
       const btn = document.getElementById('btnValidate');
@@ -767,6 +877,11 @@
         const res = await fetch(`${SCRIPT_URL}?action=getOccupied&fecha=${fechaHoy}`);
         const data = await res.json();
 
+        const senasLista = Array.isArray(data && data.senasPendientes)
+          ? data.senasPendientes
+          : (Array.isArray(data && data.turnos) ? data.turnos.filter(t => t.estado === 'Seña pendiente') : []);
+        renderSenasPendientes(senasLista, fechaHoy);
+
         if (data && Array.isArray(data.turnos)) {
           renderTurnosAgrupados(data.turnos);
         } else {
@@ -784,8 +899,73 @@
       }
     }
 
+    function formatearFechaCorta(fechaIso) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fechaIso || ''))) return fechaIso || '';
+      const [y, m, d] = String(fechaIso).split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function renderSenasPendientes(senasRaw, fechaHoyIso) {
+      const container = document.getElementById('senasPendientesList');
+      const countLabel = document.getElementById('senasCountLabel');
+      if (!container) return;
+
+      const agrupados = {};
+      (senasRaw || []).forEach(t => {
+        if (t.estado !== 'Seña pendiente') return;
+        if (!agrupados[t.code]) {
+          agrupados[t.code] = { ...t, horarios: [t.horario] };
+        } else {
+          agrupados[t.code].horarios.push(t.horario);
+        }
+      });
+
+      const lista = Object.values(agrupados).sort((a, b) => {
+        const fCmp = String(a.fecha || '').localeCompare(String(b.fecha || ''));
+        if (fCmp !== 0) return fCmp;
+        return String(a.horarios[0] || '').localeCompare(String(b.horarios[0] || ''));
+      });
+
+      if (countLabel) {
+        countLabel.textContent = `${lista.length} ${lista.length === 1 ? 'pendiente' : 'pendientes'}`;
+      }
+
+      if (lista.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No hay solicitudes de cumpleaños pendientes de aceptar.</div>';
+        return;
+      }
+
+      container.innerHTML = lista.map(item => {
+        let rangoHora = item.horarios[0];
+        if (item.horarios.length > 1) {
+          const inicio = item.horarios[0].split(' a ')[0];
+          const fin = item.horarios[item.horarios.length - 1].split(' a ')[1];
+          rangoHora = `${inicio} a ${fin} (${item.horarios.length} hs)`;
+        }
+        const fechaLegible = formatearFechaCorta(item.fecha);
+        const esHoyTag = item.fecha === fechaHoyIso ? ' · HOY' : '';
+        const codigoEscapado = String(item.code || '').replace(/'/g, "\\'");
+
+        return `
+          <div class="turno-item estado-SenaPendiente">
+            <div class="turno-main">
+              <span class="turno-code">${item.code} · 📅 ${fechaLegible}${esHoyTag} · ⏰ ${rangoHora}</span>
+              <span class="turno-title">${item.responsable} — ${item.cancha}</span>
+              <span class="turno-meta">${item.disciplina} · Tel: ${item.telefono}</span>
+              <span class="turno-sena-note">💳 Seña ${SENA_PORCENTAJE}% (${SENA_MONTO}) por WhatsApp pendiente de aceptar para agendar</span>
+            </div>
+            <div class="turno-actions">
+              <button type="button" class="btn-accept-turno" onclick="aceptarSenaCumple('${codigoEscapado}', this)">✓ Aceptar turno</button>
+              <span class="badge-estado badge-SenaPendiente">Seña pendiente</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderTurnosAgrupados(turnosRaw) {
-      const turnosActivos = turnosRaw.filter(t => t.estado !== 'Cancelado');
+      // Excluir "Cancelado" y "Seña pendiente" para que los cumpleaños sin aceptar no salgan duplicados arriba
+      const turnosActivos = turnosRaw.filter(t => t.estado !== 'Cancelado' && t.estado !== 'Seña pendiente');
       const agrupados = {};
 
       turnosActivos.forEach(t => {
@@ -806,7 +986,7 @@
 
       lista.forEach(item => {
         if (item.estado === 'Confirmado') confirmados++;
-        else pendientes++;
+        else if (item.estado === 'Pendiente') pendientes++;
       });
 
       document.getElementById('countConfirmados').textContent = confirmados;
@@ -814,7 +994,7 @@
 
       const container = document.getElementById('turnosList');
       if (lista.length === 0) {
-        container.innerHTML = '<div class="empty-msg">No hay turnos activos registrados para hoy.</div>';
+        container.innerHTML = '<div class="empty-msg">No hay turnos agendados para hoy.</div>';
         return;
       }
 
@@ -828,15 +1008,23 @@
           rangoHora = `${inicio} a ${fin} (${item.horarios.length} hs)`;
         }
 
+        const esCumple = String(item.disciplina || '').toLowerCase().includes('cumple');
+        const claseEstado = item.estado;
+
+        const avisoCumple = (esCumple && item.estado === 'Pendiente')
+          ? `<span class="turno-meta">🎂 Seña aceptada · Agendado (confirmar ingreso el día del evento)</span>`
+          : '';
+
         return `
-          <div class="turno-item estado-${item.estado}">
+          <div class="turno-item estado-${claseEstado}">
             <div class="turno-main">
               <span class="turno-code">${item.code} · ⏰ ${rangoHora}</span>
               <span class="turno-title">${item.responsable} — ${item.cancha}</span>
               <span class="turno-meta">${item.disciplina} · Tel: ${item.telefono}</span>
+              ${avisoCumple}
             </div>
             <div class="turno-actions">
-              <span class="badge-estado badge-${item.estado}">${item.estado}</span>
+              <span class="badge-estado badge-${claseEstado}">${item.estado}</span>
             </div>
           </div>
         `;

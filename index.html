@@ -18,20 +18,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=45">
 </head>
 <body>
 
   <!-- ENCABEZADO -->
   <header class="main-header">
     <div class="nav-container">
-      <div class="brand-logo">
+      <a href="#" class="brand-logo" aria-label="Volver al inicio de LAMANODED10S">
         <img src="logo.jpg" alt="LAMANODED10S" class="logo-img" onerror="this.style.display='none'">
         <div class="brand-text">
           <h1>LAMANODED10S</h1>
           <span>Complejo de Fútbol 5 y 7</span>
         </div>
-      </div>
+      </a>
       
       <button class="menu-toggle" aria-label="Abrir menú">
         <span></span><span></span><span></span>
@@ -133,7 +133,7 @@
               </div>
               <div class="pitch-label">
                 <strong>Cancha 4</strong>
-                <small>Fútbol 5 . LED</small>
+                <small>Fútbol 5 · LED</small>
               </div>
               <span class="pitch-status-tag">Disponible</span>
             </button>
@@ -146,7 +146,7 @@
               </div>
               <div class="pitch-label">
                 <strong>Cancha 5 · Reglamentaria</strong>
-                <small>Fútbol 7 · Césped Sintético</small>
+                <small>Fútbol 7 · LED</small>
               </div>
               <span class="pitch-status-tag">Disponible</span>
             </button>
@@ -165,6 +165,15 @@
                   <option value="">Cargando...</option>
                 </select>
               </div>
+            </div>
+
+            <div class="sena-cumple-box" id="senaCumpleBox" style="display: none;">
+              <p>Seña requerida: <strong id="senaCumpleResumen"></strong></p>
+              <p id="datosTransferenciaSena"></p>
+              <label class="sena-cumple-confirmation" for="confirmacionSenaCumple">
+                <input type="checkbox" id="confirmacionSenaCumple" name="confirmacionSenaCumple">
+                <span>Adjuntaré o envié el comprobante de seña del <span id="senaCumplePorcentaje"></span> por WhatsApp</span>
+              </label>
             </div>
 
             <div class="form-group-row">
@@ -186,11 +195,31 @@
             <div class="form-group-row" style="margin-top: 16px;">
               <div class="form-group">
                 <label for="nombre">Nombre y apellido</label>
-                <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  placeholder="Ej: Juan Pérez"
+                  pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+"
+                  title="Ingresá solo letras y espacios"
+                  autocomplete="name"
+                  required
+                >
               </div>
               <div class="form-group">
                 <label for="telefono">Teléfono</label>
-                <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3431234567" required>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  placeholder="Ej: 3431234567"
+                  inputmode="numeric"
+                  pattern="[0-9]{8,15}"
+                  maxlength="15"
+                  title="Ingresá solo números (entre 8 y 15 dígitos)"
+                  autocomplete="tel"
+                  required
+                >
               </div>
             </div>
 
@@ -257,7 +286,7 @@
       </div>
 
       <div class="sports-grid reveal delay-1">
-        <div class="sport-card glass-effect">
+        <div class="sport-card glass-effect highlight-card">
           <div class="sport-card-top">
             <span class="sport-badge">4 canchas</span>
             <span class="sport-price">$35.000 <small>/ hora</small></span>
@@ -266,7 +295,7 @@
           <p>Césped sintético con iluminación LED para partidos de 1 hora.</p>
         </div>
 
-        <div class="sport-card glass-effect">
+        <div class="sport-card glass-effect highlight-card">
           <div class="sport-card-top">
             <span class="sport-badge">1 cancha · Inauguración</span>
             <span class="sport-price">$65.000 <small>/ hora</small></span>
@@ -340,22 +369,21 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
           @complejo.lamanoded10s
         </a>
-      </div>
-      <p class="dev-credits">
-        Desarrollo por <a href="https://github.com" target="_blank" rel="noopener noreferrer">Ignacio Aviles Peltzer</a>
-        <span class="footer-sep">·</span>
-        <a href="ingreso.html" class="footer-staff-link">
+        <a href="ingreso.html" class="footer-staff-link" aria-label="Acceso para Recepción">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
           Recepción
         </a>
+      </div>
+      <p class="dev-credits">
+        Desarrollo por <a href="https://github.com/nachoaviles09" target="_blank" rel="noopener noreferrer">Ignacio Aviles Peltzer</a>
       </p>
     </div>
   </footer>
 
-  <script src="config.js?v=8"></script>
-  <script src="app.js?v=44"></script>
+  <script src="config.js?v=10"></script>
+  <script src="app.js?v=45"></script>
 </body>
 </html>

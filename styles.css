@@ -54,6 +54,18 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.brand-logo:hover {
+  opacity: 0.9;
+}
+
+.brand-logo:active {
+  transform: scale(0.98);
 }
 
 .logo-img {
@@ -285,8 +297,301 @@ body {
 
 /* RESERVAS */
 .grid-reservation {
-  max-width: 660px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pitch-blueprint {
+  position: relative;
+  padding: 16px 18px;
+  overflow: hidden;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+.pitch-blueprint::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    260px circle at var(--mouse-x) var(--mouse-y),
+    rgba(91, 181, 240, 0.12),
+    transparent 70%
+  );
+  z-index: 0;
+}
+
+.pitch-blueprint-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pitch-blueprint-header .sport-badge {
+  font-size: 0.66rem;
+  padding: 2px 8px;
+  margin-bottom: 2px;
+}
+
+.pitch-blueprint-header h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pitch-legend {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.pitch-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pitch-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  font-style: normal;
+}
+
+.dot-free {
+  background: #22c55e;
+  box-shadow: 0 0 7px rgba(34, 197, 94, 0.65);
+}
+
+.dot-selected {
+  background: #5bb5f0;
+  box-shadow: 0 0 7px rgba(91, 181, 240, 0.75);
+}
+
+.dot-busy {
+  background: #ef4444;
+}
+
+.pitch-complex-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.pitch-unit {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: left;
+  min-height: 76px;
+  padding: 10px 11px;
+  border-radius: 12px;
+  background: linear-gradient(165deg, rgba(16, 46, 39, 0.82) 0%, rgba(9, 24, 23, 0.94) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pitch-unit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle 2.6px at 6px 6px, #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at calc(100% - 6px) 6px, #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at 6px calc(100% - 6px), #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at calc(100% - 6px) calc(100% - 6px), #ffffff 0%, #7dd3fc 55%, transparent 100%);
+}
+
+.pitch-unit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+  background:
+    radial-gradient(circle 44px at 0% 0%, rgba(224, 242, 254, 0.26), transparent 72%),
+    radial-gradient(circle 44px at 100% 0%, rgba(224, 242, 254, 0.26), transparent 72%),
+    radial-gradient(circle 44px at 0% 100%, rgba(224, 242, 254, 0.26), transparent 72%),
+    radial-gradient(circle 44px at 100% 100%, rgba(224, 242, 254, 0.26), transparent 72%);
+  transition: opacity 0.2s ease;
+}
+
+.pitch-unit.pitch-f7 {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  min-height: 56px;
+  padding: 10px 14px;
+}
+
+.pitch-unit.pitch-f7::before {
+  background:
+    radial-gradient(circle 2.6px at 6px 6px, #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at 50% 6px, #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at calc(100% - 6px) 6px, #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at 6px calc(100% - 6px), #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at 50% calc(100% - 6px), #ffffff 0%, #7dd3fc 55%, transparent 100%),
+    radial-gradient(circle 2.6px at calc(100% - 6px) calc(100% - 6px), #ffffff 0%, #7dd3fc 55%, transparent 100%);
+}
+
+.pitch-unit.pitch-f7 .pitch-status-tag {
+  margin-top: 0;
+}
+
+.pitch-unit:hover:not(.busy) {
+  transform: translateY(-2px);
+  border-color: rgba(125, 211, 252, 0.65);
+  box-shadow: 0 8px 18px -6px rgba(34, 197, 94, 0.35);
+}
+
+.pitch-unit:hover:not(.busy)::after {
+  opacity: 1;
+}
+
+.pitch-markings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+.pitch-half-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(-50%);
+}
+
+.pitch-center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pitch-label {
+  position: relative;
+  z-index: 2;
+}
+
+.pitch-label strong {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.pitch-label small {
+  display: block;
+  font-size: 0.69rem;
+  color: #cbd5e1;
+  margin-top: 1px;
+}
+
+.pitch-status-tag {
+  position: relative;
+  z-index: 2;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.pitch-unit.selected {
+  background: linear-gradient(165deg, rgba(24, 58, 108, 0.92) 0%, rgba(12, 28, 56, 0.96) 100%);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(91, 181, 240, 0.32), 0 10px 20px -6px rgba(37, 99, 235, 0.45);
+}
+
+.pitch-unit.selected::after {
+  opacity: 1;
+}
+
+.pitch-unit.selected .pitch-status-tag {
+  background: rgba(91, 181, 240, 0.24);
+  border-color: var(--accent);
+  color: #e0f2fe;
+}
+
+.pitch-unit.busy {
+  background: linear-gradient(165deg, rgba(45, 20, 26, 0.72) 0%, rgba(22, 12, 16, 0.88) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+  opacity: 0.72;
+}
+
+.pitch-unit.busy::before {
+  background:
+    radial-gradient(circle 2.4px at 6px 6px, rgba(252, 165, 165, 0.65) 0%, transparent 100%),
+    radial-gradient(circle 2.4px at calc(100% - 6px) 6px, rgba(252, 165, 165, 0.65) 0%, transparent 100%),
+    radial-gradient(circle 2.4px at 6px calc(100% - 6px), rgba(252, 165, 165, 0.65) 0%, transparent 100%),
+    radial-gradient(circle 2.4px at calc(100% - 6px) calc(100% - 6px), rgba(252, 165, 165, 0.65) 0%, transparent 100%);
+}
+
+.pitch-unit.busy::after {
+  opacity: 0.15;
+}
+
+.pitch-unit.busy .pitch-status-tag {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+@media (max-width: 620px) {
+  .pitch-blueprint {
+    padding: 14px 12px;
+  }
+
+  .pitch-complex-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+
+  .pitch-unit {
+    min-height: 70px;
+    padding: 9px 10px;
+  }
+
+  .pitch-unit.pitch-f7 {
+    min-height: 52px;
+    padding: 9px 11px;
+  }
 }
 
 .form-container {
@@ -340,6 +645,48 @@ select:disabled {
   font-size: 0.8rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.sena-cumple-box {
+  margin: 4px 0 16px;
+  padding: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  color: #f1f5f9;
+  font-size: 0.86rem;
+}
+
+.sena-cumple-box p {
+  margin: 0 0 6px;
+}
+
+.sena-cumple-box p:nth-child(2) {
+  color: var(--text-muted);
+}
+
+.sena-cumple-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 0 0;
+  cursor: pointer;
+}
+
+.sena-cumple-confirmation input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  padding: 0;
+  border-radius: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.sena-cumple-confirmation span {
+  font-size: 0.83rem;
+  line-height: 1.4;
 }
 
 .btn-submit {
@@ -1281,224 +1628,5 @@ select:focus {
 @media (max-width: 480px) {
   .ticket-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================
-   PLANO INTERACTIVO DE CANCHAS Y SPOTLIGHT DE ESTADIO
-   ========================================================= */
-
-.pitch-blueprint {
-  padding: 22px 24px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.pitch-blueprint::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    420px circle at var(--mouse-x, 50%) var(--mouse-y, 0%),
-    rgba(91, 181, 240, 0.14),
-    transparent 70%
-  );
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.pitch-blueprint-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.pitch-blueprint-header h4 {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.02rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.pitch-legend {
-  display: flex;
-  gap: 12px;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-
-.pitch-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.pitch-legend i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.dot-free { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-.dot-selected { background: #5bb5f0; box-shadow: 0 0 8px #5bb5f0; }
-.dot-busy { background: #ef4444; }
-
-.pitch-complex-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.pitch-unit {
-  position: relative;
-  min-height: 92px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1.5px solid rgba(34, 197, 94, 0.32);
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(22, 101, 52, 0.24) 0px,
-      rgba(22, 101, 52, 0.24) 18px,
-      rgba(15, 76, 40, 0.32) 18px,
-      rgba(15, 76, 40, 0.32) 36px
-    ),
-    #091716;
-  color: #ffffff;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
-}
-
-.pitch-unit:hover {
-  transform: translateY(-2px);
-  border-color: rgba(91, 181, 240, 0.75);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba(91, 181, 240, 0.2);
-}
-
-.pitch-unit.pitch-f7 {
-  grid-column: 1 / -1;
-  min-height: 84px;
-  flex-direction: row;
-  align-items: center;
-}
-
-/* Líneas de cancha dibujadas */
-.pitch-markings {
-  position: absolute;
-  inset: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 9px;
-  pointer-events: none;
-}
-
-.pitch-half-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.pitch-center-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.pitch-label,
-.pitch-status-tag {
-  position: relative;
-  z-index: 1;
-}
-
-.pitch-label strong {
-  display: block;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.94rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.pitch-label small {
-  font-size: 0.75rem;
-  color: #cbd5e1;
-}
-
-.pitch-status-tag {
-  align-self: flex-start;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(34, 197, 94, 0.18);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: #86efac;
-}
-
-.pitch-unit.pitch-f7 .pitch-status-tag {
-  align-self: center;
-}
-
-/* Estado: Cancha seleccionada por el jugador */
-.pitch-unit.selected {
-  border-color: #5bb5f0;
-  box-shadow: 0 0 0 2px rgba(91, 181, 240, 0.35), 0 12px 26px rgba(37, 99, 235, 0.35);
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(37, 99, 235, 0.25) 0px,
-      rgba(37, 99, 235, 0.25) 18px,
-      rgba(29, 78, 216, 0.34) 18px,
-      rgba(29, 78, 216, 0.34) 36px
-    ),
-    #0b1930;
-}
-
-.pitch-unit.selected .pitch-status-tag {
-  background: rgba(91, 181, 240, 0.22);
-  border-color: #5bb5f0;
-  color: #ffffff;
-}
-
-/* Estado: Sin turnos libres en esa fecha */
-.pitch-unit.busy {
-  opacity: 0.55;
-  border-color: rgba(239, 68, 68, 0.35);
-}
-
-.pitch-unit.busy .pitch-status-tag {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
-}
-
-@media (max-width: 520px) {
-  .pitch-complex-grid {
-    grid-template-columns: 1fr;
-  }
-  .pitch-unit.pitch-f7 {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .pitch-unit.pitch-f7 .pitch-status-tag {
-    align-self: flex-start;
   }
 }
